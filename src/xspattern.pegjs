@@ -5,25 +5,27 @@ branch
 	= piece*
 
 piece
-	= atom quantifier?
+	= a:atom q:quantifier? { return [a, q || { min: 1, max: 1 }] }
 
 quantifier
-	= [?*+]
-	/ ( "{" quantity "}" )
+	= "?" { return { min: 0, max: 1 } }
+	/ "*" { return { min: 0, max: null } }
+	/ "+" { return { min: 1, max: null } }
+	/ ( "{" q:quantity "}"  { return q } )
 
 quantity
 	= quantRange
 	/ quantMin
-	/ QuantExact
+	/ q:QuantExact { return { min: q, max: q } }
 
 quantRange
-	= QuantExact "," QuantExact
+	= min:QuantExact "," max:QuantExact { return { min, max } }
 
 quantMin
-	= QuantExact ","
+	= min:QuantExact "," { return { min, max: null } }
 
 QuantExact
-	= [0-9]+
+	= [0-9]+ { return parseInt(text(), 10) }
 
 atom
 	= NormalChar

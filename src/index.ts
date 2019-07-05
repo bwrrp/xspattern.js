@@ -2,6 +2,7 @@ import { compileVM, Assembler, VM } from 'whynot';
 import * as parser from '../lib/parser';
 
 type RegExpAssembler = Assembler<number, void>;
+// TODO: better typing for AST nodes
 type ASTNode = any;
 
 function compileAtom(assembler: RegExpAssembler, ast: ASTNode): void {
@@ -16,15 +17,43 @@ function compileAtom(assembler: RegExpAssembler, ast: ASTNode): void {
 
 function compilePiece(assembler: RegExpAssembler, ast: ASTNode[]): void {
 	// Atom and quantifier
-	const [atomAst, quantifier] = ast;
-	switch (quantifier) {
-		case null:
+	const [atomAst, { min, max }] = ast as [ASTNode, { min: number; max: number }];
+	if (max === null) {
+		// Unbounded repetition
+		if (min > 0) {
+			for (let i = 0; i < min - 1; ++i) {
+				compileAtom(assembler, atomAst);
+			}
+			// Efficient "1 or more" loop
+			const start = assembler.program.length;
 			compileAtom(assembler, atomAst);
-			return;
+			const fork = assembler.jump([start]);
+			fork.data.push(assembler.program.length);
+		} else {
+			// Optional unbounded loop
+			const start = assembler.program.length;
+			const fork = assembler.jump([]);
+			// Match and loop...
+			fork.data.push(assembler.program.length);
+			compileAtom(assembler, atomAst);
+			assembler.jump([start]);
+			// ...or skip
+			fork.data.push(assembler.program.length);
+		}
+		return;
+	}
 
-		default:
-			// TODO: implement other options
-			throw new Error('Not implemented');
+	// Bounded repetition
+	for (let i = 0; i < min; ++i) {
+		compileAtom(assembler, atomAst);
+	}
+	for (let i = min; i < max; ++i) {
+		const fork = assembler.jump([]);
+		// Match...
+		fork.data.push(assembler.program.length);
+		compileAtom(assembler, atomAst);
+		// ...or skip
+		fork.data.push(assembler.program.length);
 	}
 }
 
