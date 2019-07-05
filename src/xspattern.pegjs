@@ -1,97 +1,97 @@
 regExp
-  = branch ( "|" branch )*
+	= lhs:branch rhs:( "|" b:branch { return b } )* { return [lhs, ...rhs] }
 
 branch
-  = piece*
+	= piece*
 
 piece
-  = atom quantifier?
+	= atom quantifier?
 
 quantifier
-  = [?*+]
-  / ( "{" quantity "}" )
+	= [?*+]
+	/ ( "{" quantity "}" )
 
 quantity
-  = quantRange
-  / quantMin
-  / QuantExact
+	= quantRange
+	/ quantMin
+	/ QuantExact
 
 quantRange
-  = QuantExact "," QuantExact
+	= QuantExact "," QuantExact
 
 quantMin
-  = QuantExact ","
+	= QuantExact ","
 
 QuantExact
-  = [0-9]+
+	= [0-9]+
 
 atom
-  = NormalChar
-  / charClass
-  / ( "(" regExp ")" )
+	= NormalChar
+	/ charClass
+	/ ( "(" regExp ")" )
 
 NormalChar
-  = [^.\\?*+{}()|\[\]]
+	= [^.\\?*+{}()|\[\]]
 
 charClass
-  = SingleCharEsc
-  / charClassEsc
-  / charClassExpr
-  / WildcardEsc
+	= SingleCharEsc
+	/ charClassEsc
+	/ charClassExpr
+	/ WildcardEsc
 
 charClassExpr
-  = "[" charGroup "]"
+	= "[" charGroup "]"
 
 charGroup
-  = ( posCharGroup / negCharGroup ) ( "-" charClassExpr )?
+	= ( posCharGroup / negCharGroup ) ( "-" charClassExpr )?
 
 posCharGroup
-  = ( charGroupPart )+
+	= ( charGroupPart )+
 
 negCharGroup
-  = "^" posCharGroup
+	= "^" posCharGroup
 
 charGroupPart
-  = singleChar
-  / charRange
-  / charClassEsc
+	= singleChar
+	/ charRange
+	/ charClassEsc
 
 singleChar
-  = SingleCharEsc
-  / SingleCharNoEsc
+	= SingleCharEsc
+	/ SingleCharNoEsc
 
 charRange
-  = singleChar "-" singleChar
+	= singleChar "-" singleChar
 
 SingleCharNoEsc
-  = [^\[\]]
+	= [^\[\]]
 
 charClassEsc
-  = MultiCharEsc
-  / catEsc
-  / complEsc
+	= MultiCharEsc
+	/ catEsc
+	/ complEsc
 
 SingleCharEsc
-  = "\\" [nrt\\|.?*+(){}\-\[\]^]
+	= "\\" [nrt\\|.?*+(){}\-\[\]^]
 
 catEsc
-  = "\\p{" charProp "}"
+	= "\\p{" charProp "}"
 
 complEsc
-  = "\\P{" charProp "}"
+	= "\\P{" charProp "}"
 
 charProp
-  = IsCategory
-  / IsBlock
+	= IsCategory
+	/ IsBlock
 
 IsCategory
-  = Letters
-  / Marks
-  / Numbers
-  / Punctuation
-  / Separators
-  / Symbols
-  / Others
+	= Letters
+	/ Marks
+	/ Numbers
+	/ Punctuation
+	/ Separators
+	/ Symbols
+	/ Others
 
 Letters = "L" [ultmo]?
 Marks = "M" [nce]?
@@ -102,10 +102,10 @@ Symbols = "S" [mcko]?
 Others = "C" [cfon]?
 
 IsBlock
-  = "Is" [a-zA-Z0-9\-]+
+	= "Is" [a-zA-Z0-9\-]+
 
 MultiCharEsc
-  = "\\" [sSiIcCdDwW]
+	= "\\" [sSiIcCdDwW]
 
 WildcardEsc
-  = "."
+	= "."
