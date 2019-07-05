@@ -21,7 +21,9 @@ describe('xspattern', () => {
 	});
 
 	it('throws if the pattern is not valid', () => {
+		// TODO: clean up errors thrown by the PEG parser?
 		expect(() => compile('\\')).toThrow();
+		expect(() => compile('a{3,2}')).toThrow('quantifier range is in the wrong order');
 	});
 
 	it('supports quantifiers', () => {
@@ -30,8 +32,9 @@ describe('xspattern', () => {
 		check('a*', ['', 'a', 'aa', 'aaaaa'], ['aaaaab']);
 		check('a+', ['a', 'aa', 'aaaaa'], ['', 'aaaaab']);
 		check('a{2,3}', ['aa', 'aaa'], ['', 'a', 'aaaa']);
-		// TODO: is a{3,2} valid?
 		check('a{2,}', ['aa', 'aaa', 'aaaaa'], ['', 'a']);
 		check('a{2}', ['aa'], ['', 'a', 'aaa', 'aaaaa']);
+		check('a{0,2}', ['', 'a', 'aa'], ['aaa', 'aaaaa']);
+		check('a{0,0}', [''], ['a', 'aa', 'aaa', 'b']);
 	});
 });
