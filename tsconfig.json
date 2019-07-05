@@ -1,0 +1,14 @@
+{
+	"compilerOptions": {
+		"allowJs": true,
+		"outDir": "lib",
+		"sourceMap": true,
+		"strict": true,
+		"module": "commonjs",
+		"target": "es6",
+		"lib": ["es2015"],
+		"moduleResolution": "node",
+		"types": ["jest"]
+	},
+	"include": ["src/**/*", "test/**/*", "lib/parser.js"]
+}

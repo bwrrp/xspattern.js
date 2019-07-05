@@ -1,0 +1,57 @@
+{
+	"name": "xspattern",
+	"version": "0.1.0",
+	"description": "XML Schema pattern (regular expression) matcher",
+	"author": "Stef Busking",
+	"license": "MIT",
+	"keywords": [
+		"xml",
+		"schema",
+		"pattern",
+		"xs:pattern"
+	],
+	"main": "dist/xspattern.js",
+	"module": "dist/xspattern.mjs",
+	"scripts": {
+		"build:parser": "mkdir lib && pegjs -o lib/parser.js src/xspattern.pegjs",
+		"build": "rimraf dist && rimraf lib && npm run build:parser && tsc -P tsconfig.build.json",
+		"test": "jest --coverage --verbose"
+	},
+	"files": [
+		"dist"
+	],
+	"dependencies": {
+		"whynot": "^3.0.2"
+	},
+	"devDependencies": {
+		"@types/jest": "^24.0.15",
+		"jest": "^24.8.0",
+		"pegjs": "^0.10.0",
+		"prettier": "^1.18.2",
+		"rimraf": "^2.6.3",
+		"ts-jest": "^24.0.2",
+		"typescript": "^3.5.2"
+	},
+	"jest": {
+		"transform": {
+			"^.+\\.tsx?$": "ts-jest"
+		},
+		"testRegex": "(\\.(tests))\\.(tsx?|jsx?)$",
+		"moduleFileExtensions": [
+			"ts",
+			"tsx",
+			"js",
+			"json",
+			"jsx"
+		],
+		"collectCoverageFrom": [
+			"src/**/*.ts"
+		]
+	},
+	"prettier": {
+		"printWidth": 100,
+		"singleQuote": true,
+		"tabWidth": 4,
+		"useTabs": true
+	}
+}
