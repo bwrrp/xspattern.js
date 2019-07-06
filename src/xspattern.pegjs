@@ -32,8 +32,10 @@ atom
 	/ charClass
 	/ ( "(" regExp ")" )
 
+// Originally this is [^.\\?*+{}()|\[\]] but PEG.js does not handle surrogate pairs for us, so we'll match those ourselves
 NormalChar
-	= [^.\\?*+{}()|\[\]]
+	= [\uD800-\uDBFF][\uDC00-\uDFFF] { return text().codePointAt(0) }
+	/ [^.\\?*+{}()|\[\]] { return text().codePointAt(0) }
 
 charClass
 	= SingleCharEsc

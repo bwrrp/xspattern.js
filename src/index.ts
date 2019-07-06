@@ -10,8 +10,8 @@ function compileAtom(assembler: RegExpAssembler, ast: ASTNode): void {
 		throw new Error('Not implemented');
 	}
 
-	// NormalChar
-	const codepoint = ast.codePointAt(0);
+	// NormalChar returns its code point
+	const codepoint = ast as number;
 	assembler.test(num => num === codepoint);
 }
 
