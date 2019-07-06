@@ -40,6 +40,9 @@ describe('xspattern', () => {
 		// TODO: clean up errors thrown by the PEG parser?
 		expect(() => compile('\\')).toThrow();
 		expect(() => compile('a{3,2}')).toThrow('quantifier range is in the wrong order');
+		// TODO: the following are allowed by the spec grammar but not by the spec rules
+		// expect(() => compile('[^]')).toThrow();
+		// expect(() => compile('[--z]')).toThrow();
 	});
 
 	it('supports quantifiers', () => {
@@ -76,6 +79,21 @@ describe('xspattern', () => {
 		check('\\)', [')'], ['\\']);
 		check('\\[', ['['], ['\\']);
 		check('\\]', [']'], ['\\']);
+	});
+
+	it('supports positive character groups', () => {
+		check('[asd]', ['a', 's', 'd'], ['f', 'g', 'h']);
+		check('[💣💰💩]', ['💣', '💰', '💩'], ['💚', '\uD83D', '\uDCA9']);
+	});
+
+	it('supports negative character groups', () => {
+		check('[^^asd]', ['f', 'g', 'h'], ['^', 'a', 's', 'd']);
+	});
+
+	it('supports character ranges', () => {
+		check('[a-z]', ['a', 'g', 'z'], ['', 'aa', 'A', 'G', 'Z']);
+		check('[a-zA-Z]', ['a', 'g', 'z', 'A', 'G', 'Z'], ['', ' ', '8']);
+		check('[💣-💰]', ['💩'], ['💚']);
 	});
 
 	it('supports the "." wildcard', () => {

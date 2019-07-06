@@ -44,31 +44,40 @@ charClass
 	/ WildcardEsc
 
 charClassExpr
-	= "[" charGroup "]"
+	= "[" f:charGroup "]" { return f }
 
 charGroup
-	= ( posCharGroup / negCharGroup ) ( "-" charClassExpr )?
+	= f:( negCharGroup / posCharGroup ) g:( "-" h:charClassExpr { return h } )? {
+		if (g) {
+			return codepoint => f(codepoint) && !g(codepoint);
+		}
+		return codepoint => f(codepoint);
+	}
 
 posCharGroup
-	= ( charGroupPart )+
+	= fs:( charGroupPart )+ { return codepoint => fs.some(f => f(codepoint)) }
 
 negCharGroup
-	= "^" posCharGroup
+	= "^" f:posCharGroup { return codepoint => !f(codepoint) }
 
 charGroupPart
-	= singleChar
-	/ charRange
+	= charRange
 	/ charClassEsc
+	/ c:singleChar { return codepoint => codepoint === c }
 
 singleChar
 	= SingleCharEsc
 	/ SingleCharNoEsc
 
 charRange
-	= singleChar "-" singleChar
+	= first:singleChar "-" last:singleChar {
+		// Inverted range is allowed by the spec, it's just an empty set
+		return codepoint => first <= codepoint && codepoint <= last
+	}
 
 SingleCharNoEsc
-	= [^\[\]]
+	= [\uD800-\uDBFF][\uDC00-\uDFFF] { return text().codePointAt(0) }
+	/ [^\[\]] { return text().codePointAt(0) }
 
 charClassEsc
 	= MultiCharEsc
