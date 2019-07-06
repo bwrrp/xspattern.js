@@ -6,13 +6,20 @@ type RegExpAssembler = Assembler<number, void>;
 type ASTNode = any;
 
 function compileAtom(assembler: RegExpAssembler, ast: ASTNode): void {
-	if (Array.isArray(ast)) {
-		throw new Error('Not implemented');
-	}
+	switch (typeof ast) {
+		case 'number':
+			// Single code point to test
+			assembler.test(num => num === ast);
+			return;
 
-	// NormalChar returns its code point
-	const codepoint = ast as number;
-	assembler.test(num => num === codepoint);
+		case 'function':
+			// Predicate function for some character class
+			assembler.test(ast);
+			return;
+
+		default:
+			throw new Error('Not implemented');
+	}
 }
 
 function compilePiece(assembler: RegExpAssembler, ast: ASTNode[]): void {

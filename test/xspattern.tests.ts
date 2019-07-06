@@ -77,4 +77,8 @@ describe('xspattern', () => {
 		check('\\[', ['['], ['\\']);
 		check('\\]', [']'], ['\\']);
 	});
+
+	it('supports the "." wildcard', () => {
+		check('.', ['a', 'x', '\n'], ['', 'aa']);
+	});
 });

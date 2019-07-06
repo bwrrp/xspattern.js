@@ -115,4 +115,4 @@ MultiCharEsc
 	= "\\" [sSiIcCdDwW]
 
 WildcardEsc
-	= "."
+	= "." { return codepoint => true }
