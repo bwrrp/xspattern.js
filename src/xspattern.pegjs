@@ -76,7 +76,10 @@ charClassEsc
 	/ complEsc
 
 SingleCharEsc
-	= "\\" [nrt\\|.?*+(){}\-\[\]^]
+	= "\\n" { return 0xA }
+	/ "\\r" { return 0xD }
+	/ "\\t" { return 0x9 }
+	/ "\\" char:[\\|.?*+(){}\-\[\]^] { return char.codePointAt(0) }
 
 catEsc
 	= "\\p{" charProp "}"
