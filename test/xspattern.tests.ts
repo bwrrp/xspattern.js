@@ -40,9 +40,13 @@ describe('xspattern', () => {
 		// TODO: clean up errors thrown by the PEG parser?
 		expect(() => compile('\\')).toThrow();
 		expect(() => compile('a{3,2}')).toThrow('quantifier range is in the wrong order');
-		// TODO: the following are allowed by the spec grammar but not by the spec rules
-		// expect(() => compile('[^]')).toThrow();
+		expect(() => compile('[^]')).toThrow();
+		// TODO: the following is allowed by the spec grammar but not by the spec rules
 		// expect(() => compile('[--z]')).toThrow();
+	});
+
+	it('supports basic branch / piece combinations', () => {
+		check('ab|cde|', ['ab', 'cde', ''], ['a', 'abc', 'de', 'abcde']);
 	});
 
 	it('supports quantifiers', () => {

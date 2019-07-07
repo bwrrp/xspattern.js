@@ -47,12 +47,16 @@ charClassExpr
 	= "[" f:charGroup "]" { return f }
 
 charGroup
-	= f:( negCharGroup / posCharGroup ) g:( "-" h:charClassExpr { return h } )? {
+	= f:posOrNegCharGroup g:( (& "-[") "-" h:charClassExpr { return h } )? {
 		if (g) {
 			return codepoint => f(codepoint) && !g(codepoint);
 		}
 		return codepoint => f(codepoint);
 	}
+
+posOrNegCharGroup
+	= (! "^") f:posCharGroup { return f }
+	/ (& "^") f:negCharGroup { return f }
 
 posCharGroup
 	= fs:( charGroupPart )+ { return codepoint => fs.some(f => f(codepoint)) }
