@@ -1,31 +1,31 @@
 regExp
-	= lhs:branch rhs:( "|" b:branch { return b } )* { return [lhs, ...rhs] }
+	= lhs:branch rhs:( "|" b:branch { return b; } )* { return [lhs, ...rhs]; }
 
 branch
 	= piece*
 
 piece
-	= a:atom q:quantifier? { return [a, q || { min: 1, max: 1 }] }
+	= a:atom q:quantifier? { return [a, q || { min: 1, max: 1 }]; }
 
 quantifier
-	= "?" { return { min: 0, max: 1 } }
-	/ "*" { return { min: 0, max: null } }
-	/ "+" { return { min: 1, max: null } }
-	/ ( "{" q:quantity "}"  { return q } )
+	= "?" { return { min: 0, max: 1 }; }
+	/ "*" { return { min: 0, max: null }; }
+	/ "+" { return { min: 1, max: null }; }
+	/ ( "{" q:quantity "}"  { return q; } )
 
 quantity
 	= quantRange
 	/ quantMin
-	/ q:QuantExact { return { min: q, max: q } }
+	/ q:QuantExact { return { min: q, max: q }; }
 
 quantRange
-	= min:QuantExact "," max:QuantExact { return { min, max } }
+	= min:QuantExact "," max:QuantExact { return { min, max }; }
 
 quantMin
-	= min:QuantExact "," { return { min, max: null } }
+	= min:QuantExact "," { return { min, max: null }; }
 
 QuantExact
-	= [0-9]+ { return parseInt(text(), 10) }
+	= [0-9]+ { return parseInt(text(), 10); }
 
 atom
 	= NormalChar
@@ -34,8 +34,8 @@ atom
 
 // Originally this is [^.\\?*+{}()|\[\]] but PEG.js does not handle surrogate pairs for us, so we'll match those ourselves
 NormalChar
-	= [\uD800-\uDBFF][\uDC00-\uDFFF] { return text().codePointAt(0) }
-	/ [^.\\?*+{}()|\[\]] { return text().codePointAt(0) }
+	= [\uD800-\uDBFF][\uDC00-\uDFFF] { return text().codePointAt(0); }
+	/ [^.\\?*+{}()|\[\]] { return text().codePointAt(0); }
 
 charClass
 	= SingleCharEsc
@@ -44,14 +44,14 @@ charClass
 	/ WildcardEsc
 
 charClassExpr
-	= "[" f:charGroup "]" { return f }
+	= "[" f:charGroup "]" { return f; }
 
 charGroup
-	= f:posOrNegCharGroup g:( (& "-[") "-" h:charClassExpr { return h } )? {
-		if (g) {
-			return codepoint => f(codepoint) && !g(codepoint);
+	= f:posOrNegCharGroup g:( "-" h:charClassExpr { return h; } )? {
+		if (g === null) {
+			return f;
 		}
-		return codepoint => f(codepoint);
+		return codepoint => f(codepoint) && !g(codepoint);
 	}
 
 posOrNegCharGroup
@@ -59,7 +59,13 @@ posOrNegCharGroup
 	/ (& "^") f:negCharGroup { return f }
 
 posCharGroup
-	= fs:( charGroupPart )+ { return codepoint => fs.some(f => f(codepoint)) }
+	= only:charGroupPart (& "-[") { return only; }
+	/ first:charGroupPart next:posCharGroup? {
+		if (next === null) {
+			return first;
+		}
+		return codepoint => first(codepoint) || next(codepoint);
+	}
 
 negCharGroup
 	= "^" f:posCharGroup { return codepoint => !f(codepoint) }
@@ -74,14 +80,31 @@ singleChar
 	/ SingleCharNoEsc
 
 charRange
-	= first:singleChar "-" last:singleChar {
+	= first:singleCharWithHyphenAsNull "-" last:singleCharWithHyphenAsNull {
+		// It is an error if either of the two singleChars in a charRange is a
+		// SingleCharNoEsc comprising an unescaped hyphen
+		if (first === null || last === null) {
+			throw new Error(
+				'Invalid pattern: unescaped hyphen may not be used as a range endpoint'
+			);
+		}
 		// Inverted range is allowed by the spec, it's just an empty set
 		return codepoint => first <= codepoint && codepoint <= last
 	}
 
+singleCharWithHyphenAsNull
+	= SingleCharEsc
+	/ SingleCharNoEscWithHyphenAsNull
+
 SingleCharNoEsc
 	= [\uD800-\uDBFF][\uDC00-\uDFFF] { return text().codePointAt(0) }
 	/ [^\[\]] { return text().codePointAt(0) }
+
+SingleCharNoEscWithHyphenAsNull
+	= [\uD800-\uDBFF][\uDC00-\uDFFF] { return text().codePointAt(0) }
+	/ [^\[\]\-] { return text().codePointAt(0) }
+	// A hyphen followed by [ is not a singleChar at all
+	/ "-" (! "[") { return null; }
 
 charClassEsc
 	= MultiCharEsc

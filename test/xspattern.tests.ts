@@ -41,8 +41,9 @@ describe('xspattern', () => {
 		expect(() => compile('\\')).toThrow();
 		expect(() => compile('a{3,2}')).toThrow('quantifier range is in the wrong order');
 		expect(() => compile('[^]')).toThrow();
-		// TODO: the following is allowed by the spec grammar but not by the spec rules
-		// expect(() => compile('[--z]')).toThrow();
+		expect(() => compile('[--z]')).toThrow(
+			'unescaped hyphen may not be used as a range endpoint'
+		);
 	});
 
 	it('supports basic branch / piece combinations', () => {
@@ -91,6 +92,7 @@ describe('xspattern', () => {
 	});
 
 	it('supports negative character groups', () => {
+		check('[^x]', ['y'], ['x']);
 		check('[^^asd]', ['f', 'g', 'h'], ['^', 'a', 's', 'd']);
 	});
 
@@ -98,6 +100,14 @@ describe('xspattern', () => {
 		check('[a-z]', ['a', 'g', 'z'], ['', 'aa', 'A', 'G', 'Z']);
 		check('[a-zA-Z]', ['a', 'g', 'z', 'A', 'G', 'Z'], ['', ' ', '8']);
 		check('[💣-💰]', ['💩'], ['💚']);
+		check('[a-]', ['a', '-'], ['b']);
+		check('[a-k-z]', ['a', 'c', '-', 'z'], ['l', 'x', 'y']);
+	});
+
+	it('supports character group subtraction', () => {
+		check('[abcd-[cdef]]', ['a', 'b'], ['c', 'd', 'e', 'f', 'g']);
+		check('[a-z-[aeoui]]', ['b', 'd', 'z'], ['a', 'u', 'o']);
+		check('[a--[a]]', ['-'], ['a', 'b']);
 	});
 
 	it('supports the "." wildcard', () => {
