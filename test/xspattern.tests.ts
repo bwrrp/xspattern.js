@@ -112,7 +112,7 @@ describe('xspattern', () => {
 	});
 
 	it('supports the "." wildcard', () => {
-		check('.', ['a', 'x', '\n'], ['', 'aa']);
+		check('.', ['a', 'x'], ['', 'aa', '\n', '\r']);
 	});
 
 	it('supports nested regexps', () => {

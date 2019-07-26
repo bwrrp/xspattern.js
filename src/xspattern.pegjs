@@ -180,4 +180,4 @@ MultiCharEsc
 	= "\\" [sSiIcCdDwW] { return undefined; }
 
 WildcardEsc
-	= "." { return codepoint => true; }
+	= "." { return codepoint => codepoint !== 0xA && codepoint !== 0xD; }
