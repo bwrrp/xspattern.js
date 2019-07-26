@@ -1,16 +1,18 @@
 import { RegExp, Branch, Piece, Atom } from './ast';
+import sets from './sets';
 
 function isAtomSupported(atom: Atom): boolean {
 	switch (atom.kind) {
 		case 'codepoint':
-		case 'predicate':
 			return true;
+
+		case 'predicate': {
+			const predicate = atom.value(sets);
+			return predicate !== undefined;
+		}
 
 		case 'regexp':
 			return isRegExpSupported(atom.value);
-
-		case 'unsupported':
-			return false;
 	}
 }
 

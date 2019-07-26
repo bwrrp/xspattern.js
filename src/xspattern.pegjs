@@ -31,14 +31,11 @@ atom
 	= codePoint:NormalChar {
 		return { kind: 'codepoint', value: codePoint };
 	}
-	/ predicate:charClass {
-		if (predicate === undefined) {
-			return { kind: 'unsupported', value: undefined };
+	/ codePointOrFactory:charClass {
+		if (typeof codePointOrFactory === 'number') {
+			return { kind: 'codepoint', value: codePointOrFactory };
 		}
-		if (typeof predicate === 'number') {
-			return { kind: 'codepoint', value: predicate };
-		}
-		return { kind: 'predicate', value: predicate };
+		return { kind: 'predicate', value: codePointOrFactory };
 	}
 	/ "(" expression:regExp ")" {
 		return { kind: 'regexp', value: expression };
@@ -56,47 +53,33 @@ charClass
 	/ WildcardEsc
 
 charClassExpr
-	= "[" predicate:charGroup "]" { return predicate; }
+	= "[" factory:charGroup "]" { return factory; }
 
 charGroup
-	= predicate:posOrNegCharGroup except:( "-" except:charClassExpr { return except; } )? {
-		if (predicate === undefined || except === undefined) {
-			return undefined;
-		}
-		if (except === null) {
-			return predicate;
-		}
-		return codepoint => predicate(codepoint) && !except(codepoint);
+	= factory:posOrNegCharGroup except:( "-" except:charClassExpr { return except; } )? {
+		return sets => sets.difference(factory(sets), except && except(sets));
 	}
 
 posOrNegCharGroup
-	= (! "^") predicate:posCharGroup { return predicate; }
-	/ (& "^") predicate:negCharGroup { return predicate; }
+	= (! "^") factory:posCharGroup { return factory; }
+	/ (& "^") factory:negCharGroup { return factory; }
 
 posCharGroup
 	= only:charGroupPart (& "-[") { return only; }
 	/ first:charGroupPart next:posCharGroup? {
-		if (first === undefined || next === undefined) {
-			return undefined;
-		}
-		if (next === null) {
-			return first;
-		}
-		return codepoint => first(codepoint) || next(codepoint);
+		return sets => sets.union(first(sets), next && next(sets));
 	}
 
 negCharGroup
-	= "^" predicate:posCharGroup {
-		if (predicate === undefined) {
-			return undefined;
-		}
-		return codepoint => !predicate(codepoint);
+	= "^" factory:posCharGroup {
+		return sets => sets.complement(factory(sets));
 	}
 
 charGroupPart
 	= charRange
 	/ charClassEsc
-	/ c:singleChar { return codepoint => codepoint === c; }
+	/ codepoint:singleChar {
+		return sets => sets.singleChar(codepoint); }
 
 singleChar
 	= SingleCharEsc
@@ -104,15 +87,7 @@ singleChar
 
 charRange
 	= first:singleCharWithHyphenAsNull "-" last:singleCharWithHyphenAsNull {
-		// It is an error if either of the two singleChars in a charRange is a
-		// SingleCharNoEsc comprising an unescaped hyphen
-		if (first === null || last === null) {
-			throw new Error(
-				'Invalid pattern: unescaped hyphen may not be used as a range endpoint'
-			);
-		}
-		// Inverted range is allowed by the spec, it's just an empty set
-		return codepoint => first <= codepoint && codepoint <= last;
+		return sets => sets.charRange(first, last);
 	}
 
 singleCharWithHyphenAsNull
@@ -141,19 +116,19 @@ SingleCharEsc
 	/ "\\" char:[\\|.?*+(){}\-\[\]^] { return char.codePointAt(0); }
 
 catEsc
-	= "\\p{" charProp "}" {
-		// Not supported
-		return undefined;
+	= "\\p{" factory:charProp "}" {
+		return factory;
 	}
 
 complEsc
-	= "\\P{" charProp "}" {
-		// Not supported
-		return undefined;
+	= "\\P{" factory:charProp "}" {
+		return sets => sets.complement(factory(sets));
 	}
 
 charProp
-	= IsCategory
+	= IsCategory {
+		return sets => sets.category[text()];
+	}
 	/ IsBlock
 
 IsCategory
@@ -174,10 +149,16 @@ Symbols = "S" [mcko]?
 Others = "C" [cfon]?
 
 IsBlock
-	= "Is" [a-zA-Z0-9\-]+
+	= "Is" identifier:[a-zA-Z0-9\-]+ {
+		return sets => sets.block(identifier);
+	}
 
 MultiCharEsc
-	= "\\" [sSiIcCdDwW] { return undefined; }
+	= "\\" identifier:[sSiIcCdDwW] {
+		return sets => sets.multiChar[identifier];
+	}
 
 WildcardEsc
-	= "." { return codepoint => codepoint !== 0xA && codepoint !== 0xD; }
+	= "." {
+		return sets => sets.wildcard;
+	}

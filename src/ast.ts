@@ -1,9 +1,8 @@
-export type Codepoint = number;
-export type Predicate = (cp: Codepoint) => boolean;
+import { Codepoint, PredicateFactory } from './sets';
+
 export type Atom =
-	| { kind: 'unsupported'; value: undefined }
 	| { kind: 'codepoint'; value: Codepoint }
-	| { kind: 'predicate'; value: Predicate }
+	| { kind: 'predicate'; value: PredicateFactory }
 	| { kind: 'regexp'; value: RegExp };
 export type Quantifier = { min: number; max: number | null };
 export type Piece = [Atom, Quantifier];

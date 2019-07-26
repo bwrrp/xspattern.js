@@ -1,28 +1,30 @@
 import { Assembler } from 'whynot';
 import { RegExp, Branch, Piece, Atom } from './ast';
+import sets from './sets';
 
 type RegExpAssembler = Assembler<number, void>;
 
 function compileAtom(assembler: RegExpAssembler, atom: Atom): void {
 	switch (atom.kind) {
 		case 'codepoint':
-			// Single code point to test
-			assembler.test(num => num === atom.value);
+			// Value is a single code point to test
+			assembler.test(sets.singleChar(atom.value));
 			return;
 
-		case 'predicate':
-			// Predicate function for some character class
-			assembler.test(atom.value);
+		case 'predicate': {
+			// Value is a factory that builds the predicate function for some character class
+			const predicate = atom.value(sets);
+			if (predicate === undefined) {
+				throw new Error('Not implemented');
+			}
+			assembler.test(predicate);
 			return;
+		}
 
 		case 'regexp':
-			// Nested RegExp
+			// Value is a nested RegExp
 			compileRegExp(assembler, atom.value);
 			return;
-
-		case 'unsupported':
-			// Not supported, should not have reached this point
-			throw new Error('Not implemented');
 	}
 }
 

@@ -51,6 +51,10 @@ describe('xspattern', () => {
 		check('ab|cde|', ['ab', 'cde', ''], ['a', 'abc', 'de', 'abcde']);
 	});
 
+	it('supports nested regexps', () => {
+		check('a(b|c)d', ['abd', 'acd'], ['abc', 'abcd']);
+	});
+
 	it('supports quantifiers', () => {
 		check('a', ['a'], ['', 'aa']);
 		check('a?', ['', 'a'], ['aa']);
@@ -111,11 +115,39 @@ describe('xspattern', () => {
 		check('[a--[a]]', ['-'], ['a', 'b']);
 	});
 
-	it('supports the "." wildcard', () => {
-		check('.', ['a', 'x'], ['', 'aa', '\n', '\r']);
+	describe('multi-character escapes', () => {
+		it('supports \\s', () => {
+			check('\\s', [' ', '\n', '\r', '\t'], ['a', '\u{2000}', '  ']);
+		});
+
+		it('supports \\S', () => {
+			check('\\S', ['a', '\u{2000}'], [' ', '\n', '\r', '\t', '  ']);
+		});
+
+		it('supports \\i', () => {
+			check('\\i', ['a', '_'], ['0', '-']);
+		});
+
+		it('supports \\I', () => {
+			check('\\I', ['0', '-'], ['a', '_']);
+		});
+
+		it('supports \\c', () => {
+			check('\\c', ['a', '_', '0', '-'], ['\r']);
+		});
+
+		it('supports \\C', () => {
+			check('\\C', ['\r'], ['a', '_', '0', '-']);
+		});
+
+		it('supports the "." wildcard', () => {
+			check('.', ['a', 'x'], ['', 'aa', '\n', '\r']);
+		});
 	});
 
-	it('supports nested regexps', () => {
-		check('a(b|c)d', ['abd', 'acd'], ['abc', 'abcd']);
+	describe('unicode character classes', () => {
+		it("matches any character for a unicode block that doesn't exist", () => {
+			check('\\p{IsPrrrt}', ['a', '1', '-', '\n', ' ']);
+		});
 	});
 });
