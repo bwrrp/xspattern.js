@@ -1,7 +1,7 @@
-import { compile } from '../src/index';
+import { compile, MatchFn } from '../src/index';
 
 expect.extend({
-	toBeMatchedBy(str: string, matcher: (str: string) => boolean) {
+	toBeMatchedBy(str: string, matcher: MatchFn) {
 		if (matcher(str)) {
 			return {
 				message: () => `Input "${str}" should not match`,
@@ -17,7 +17,8 @@ expect.extend({
 });
 
 function check(pattern: string, examples: string[], counterExamples: string[] = []) {
-	const match = compile(pattern);
+	const match = compile(pattern)!;
+	expect(match).not.toBeNull();
 	examples.forEach(str => {
 		expect(str).toBeMatchedBy(match);
 	});
@@ -28,7 +29,7 @@ function check(pattern: string, examples: string[], counterExamples: string[] = 
 
 describe('xspattern', () => {
 	it('can compile a pattern', () => {
-		const match = compile('a|b');
+		const match = compile('a|b')!;
 		expect('a').toBeMatchedBy(match);
 		expect('b').toBeMatchedBy(match);
 		expect('').not.toBeMatchedBy(match);
@@ -112,5 +113,9 @@ describe('xspattern', () => {
 
 	it('supports the "." wildcard', () => {
 		check('.', ['a', 'x', '\n'], ['', 'aa']);
+	});
+
+	it('supports nested regexps', () => {
+		check('a(b|c)d', ['abd', 'acd'], ['abc', 'abcd']);
 	});
 });
