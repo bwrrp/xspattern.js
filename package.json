@@ -14,7 +14,7 @@
 	"module": "dist/xspattern.mjs",
 	"scripts": {
 		"build:parser": "mkdir lib && pegjs -o lib/parser.js src/xspattern.pegjs",
-		"build": "rimraf dist && rimraf lib && npm run build:parser && tsc -P tsconfig.build.json",
+		"build": "rimraf dist && rimraf lib && npm run build:parser && tsc -P tsconfig.build.json && rollup -c",
 		"test": "jest --coverage --verbose"
 	},
 	"files": [
@@ -29,6 +29,10 @@
 		"pegjs": "^0.10.0",
 		"prettier": "^1.18.2",
 		"rimraf": "^2.6.3",
+		"rollup": "^1.20.3",
+		"rollup-plugin-commonjs": "^10.1.0",
+		"rollup-plugin-sourcemaps": "^0.4.2",
+		"rollup-plugin-terser": "^5.1.1",
 		"ts-jest": "^24.0.2",
 		"typescript": "^3.5.2"
 	},
