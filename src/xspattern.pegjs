@@ -126,12 +126,17 @@ complEsc
 	}
 
 charProp
-	= IsCategory {
-		return sets => sets.category[text()];
+	= identifier:IsCategory {
+		return sets => sets.category(identifier);
 	}
 	/ IsBlock
 
 IsCategory
+	= cat:CategoryIdentifier {
+		return text();
+	}
+
+CategoryIdentifier
 	= Letters
 	/ Marks
 	/ Numbers
@@ -149,8 +154,13 @@ Symbols = "S" [mcko]?
 Others = "C" [cfon]?
 
 IsBlock
-	= "Is" identifier:[a-zA-Z0-9\-]+ {
+	= "Is" identifier:BlockIdentifier {
 		return sets => sets.block(identifier);
+	}
+
+BlockIdentifier
+	= [a-zA-Z0-9\-]+ {
+		return text();
 	}
 
 MultiCharEsc

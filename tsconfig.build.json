@@ -8,6 +8,7 @@
 		"target": "es6",
 		"lib": ["es2015"],
 		"moduleResolution": "node",
+		"resolveJsonModule": true,
 		"types": []
 	},
 	"include": ["src/**/*", "lib/parser.js"]

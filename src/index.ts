@@ -1,7 +1,6 @@
 import { compileVM } from 'whynot';
-import * as parser from '../lib/parser';
+import * as parser from './generated/parser';
 import { compileRegExp } from './compiler';
-import { isRegExpSupported } from './checker';
 import { RegExp } from './ast';
 
 function toCodePoints(str: string): number[] {
@@ -15,12 +14,8 @@ export type MatchFn = (str: string) => boolean;
  *
  * @return a matcher function, or null if the pattern uses unsupported features
  */
-export function compile(pattern: string): MatchFn | null {
+export function compile(pattern: string): MatchFn {
 	const ast = parser.parse(pattern) as RegExp;
-
-	if (!isRegExpSupported(ast)) {
-		return null;
-	}
 
 	const vm = compileVM<number>(assembler => {
 		compileRegExp(assembler, ast);

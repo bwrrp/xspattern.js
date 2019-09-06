@@ -14,9 +14,6 @@ function compileAtom(assembler: RegExpAssembler, atom: Atom): void {
 		case 'predicate': {
 			// Value is a factory that builds the predicate function for some character class
 			const predicate = atom.value(sets);
-			if (predicate === undefined) {
-				throw new Error('Not implemented');
-			}
 			assembler.test(predicate);
 			return;
 		}

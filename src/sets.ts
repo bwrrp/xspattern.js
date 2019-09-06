@@ -1,73 +1,56 @@
-export type Codepoint = number;
-export type Predicate = (cp: Codepoint) => boolean;
-export type PredicateFactory = (sets: Sets) => Predicate | undefined;
+import * as blocks from './generated/blocks.json';
+import * as categories from './generated/categories.json';
+
+import { singleChar, charRange, everything, union } from './basic-sets';
+import { Codepoint, Predicate } from './types';
+import { unpackBlocks } from './unicode-blocks';
+import { unpackCategories } from './unicode-categories';
+
+export type PredicateFactory = (sets: Sets) => Predicate;
 
 function asCodepoint(char: string): number {
 	return char.codePointAt(0)!;
 }
 
-function complement(predicate: Predicate | undefined): Predicate | undefined {
-	if (predicate === undefined) {
-		return undefined;
-	}
+function complement(predicate: Predicate): Predicate {
 	return codepoint => !predicate(codepoint);
 }
 
-function union(first: Predicate, next: Predicate): Predicate {
-	return codepoint => first(codepoint) || next(codepoint);
-}
-
-function maybeUnion(
-	first: Predicate | undefined,
-	next: Predicate | undefined | null
-): Predicate | undefined {
-	if (first === undefined || next === undefined) {
-		return undefined;
-	}
+function maybeUnion(first: Predicate, next: Predicate | null): Predicate {
 	if (next === null) {
 		return first;
 	}
 	return union(first, next);
 }
 
-function difference(
-	predicate: Predicate | undefined,
-	except: Predicate | undefined | null
-): Predicate | undefined {
-	if (predicate === undefined || except === undefined) {
-		return undefined;
-	}
+function difference(predicate: Predicate, except: Predicate | null): Predicate {
 	if (except === null) {
 		return predicate;
 	}
 	return codepoint => predicate(codepoint) && !except(codepoint);
 }
 
-function singleChar(expected: Codepoint): Predicate {
-	return codepoint => codepoint === expected;
-}
+const predicateByNormalizedBlockId: Map<string, Predicate> = unpackBlocks(blocks);
+const predicateByCategory: Map<string, Predicate> = unpackCategories(categories);
 
-function charRange(first: Codepoint, last: Codepoint): Predicate {
-	// It is an error if either of the two singleChars in a charRange is a
-	// SingleCharNoEsc comprising an unescaped hyphen
-	if (first === null || last === null) {
-		throw new Error('Invalid pattern: unescaped hyphen may not be used as a range endpoint');
+function unicodeBlock(identifier: string): Predicate {
+	// The matching engine is not required to normalize the block identifier in the regexp
+	const predicate = predicateByNormalizedBlockId.get(identifier);
+	if (predicate === undefined) {
+		// Unknown blocks should match every character
+		return everything;
 	}
-	// Inverted range is allowed by the spec, it's just an empty set
-	return codepoint => first <= codepoint && codepoint <= last;
+	return predicate;
 }
 
-const unicodeCategories = {
-	// TODO
-};
-
-function everything(_codepoint: Codepoint): boolean {
-	return true;
-}
-
-function unicodeBlock(_identifier: string): Predicate {
-	// Unknown blocks should match every character
-	return everything;
+function unicodeCategory(identifier: string): Predicate {
+	const predicate = predicateByCategory.get(identifier);
+	// If is unreachable, as the parser will never match unsupported identifiers
+	/* istanbul ignore if */
+	if (predicate == undefined) {
+		throw new Error(`Invalid pattern: ${identifier} is not a valid unicode category`);
+	}
+	return predicate;
 }
 
 function whitespace(codepoint: Codepoint): boolean {
@@ -107,6 +90,18 @@ const nameChar = [
 	charRange(0x203f, 0x2040)
 ].reduce(union);
 
+const digit = predicateByCategory.get('Nd')!;
+const notDigit = complement(digit);
+const wordChar = difference(
+	charRange(0x0000, 0x10ffff),
+	[
+		predicateByCategory.get('P')!,
+		predicateByCategory.get('Z')!,
+		predicateByCategory.get('C')!
+	].reduce(union)
+);
+const notWordChar = complement(wordChar);
+
 function wildcard(codepoint: Codepoint): boolean {
 	// Anything except newline and carriage return
 	return codepoint !== 0xa && codepoint !== 0xd;
@@ -123,7 +118,7 @@ const sets = {
 
 	// Unicode properties
 	block: unicodeBlock,
-	category: unicodeCategories,
+	category: unicodeCategory,
 
 	// Common multi-character sets
 	multiChar: {
@@ -133,11 +128,10 @@ const sets = {
 		I: complement(nameStartChar),
 		c: nameChar,
 		C: complement(nameChar),
-		// TODO: these require a unicode database
-		d: undefined,
-		D: undefined,
-		w: undefined,
-		W: undefined
+		d: digit,
+		D: notDigit,
+		w: wordChar,
+		W: notWordChar
 	},
 	wildcard
 };

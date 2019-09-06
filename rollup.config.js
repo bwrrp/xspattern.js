@@ -1,11 +1,12 @@
 import commonjs from 'rollup-plugin-commonjs';
+import json from 'rollup-plugin-json';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import { terser } from 'rollup-plugin-terser';
 
 const { main: MAIN_DEST_FILE, module: MODULE_DEST_FILE } = require('./package.json');
 
 export default {
-	input: 'lib/src/index.js',
+	input: 'lib/index.js',
 	output: [
 		{
 			name: 'xspattern',
@@ -20,5 +21,13 @@ export default {
 		{ file: MODULE_DEST_FILE, format: 'es', sourcemap: true }
 	],
 	external: ['whynot'],
-	plugins: [commonjs(), sourcemaps(), terser()]
+	plugins: [
+		commonjs(),
+		json({
+			preferConst: true,
+			compact: true
+		}),
+		sourcemaps(),
+		terser()
+	]
 };

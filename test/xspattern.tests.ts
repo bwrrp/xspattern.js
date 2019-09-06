@@ -140,14 +140,53 @@ describe('xspattern', () => {
 			check('\\C', ['\r'], ['a', '_', '0', '-']);
 		});
 
+		it('supports \\d', () => {
+			check('\\d', ['1', '9', '٨', '߈'], ['a', ' ', '①']);
+		});
+
+		it('supports \\D', () => {
+			check('\\D', ['a', ' ', '①'], ['1', '9', '٨', '߈']);
+		});
+
+		it('supports \\w', () => {
+			check('\\w', ['a', '①', '😀'], ['.', '-', ' ']);
+		});
+
+		it('supports \\W', () => {
+			check('\\W', ['.', '-', ' '], ['a', '①', '😀']);
+		});
+
 		it('supports the "." wildcard', () => {
 			check('.', ['a', 'x'], ['', 'aa', '\n', '\r']);
 		});
 	});
 
 	describe('unicode character classes', () => {
+		it('matches known unicode blocks', () => {
+			check('\\p{IsBasicLatin}', ['a', 'Q'], ['好']);
+			check('\\p{IsCJKUnifiedIdeographs}', ['好'], ['Z']);
+			check('\\p{IsMiscellaneousSymbolsandPictographs}', ['💩'], ['☃']);
+		});
+
 		it("matches any character for a unicode block that doesn't exist", () => {
 			check('\\p{IsPrrrt}', ['a', '1', '-', '\n', ' ']);
+		});
+
+		it('matches known unicode categories', () => {
+			check('\\p{Ll}', ['a', 'x', 'z'], ['A', 'X', 'Z', '好', '💩']);
+			check('\\p{Lu}', ['A', 'X', 'Z'], ['a', 'x', 'z', '好', '💩']);
+			check('\\P{Ll}', ['A', 'X', 'Z', '好', '💩'], ['a', 'x', 'z']);
+			check('\\P{Lu}', ['a', 'x', 'z', '好', '💩'], ['A', 'X', 'Z']);
+		});
+
+		it('matches combinations of unicode categories using the single-letter shorthand', () => {
+			check('\\p{S}', ['💩', '₿', '+'], ['a', 'x', 'z', '好']);
+			check('\\P{S}', ['a', 'x', 'z', '好'], ['💩', '₿', '+']);
+		});
+
+		it("throws if the pattern contains a unicode category that doesn't exist", () => {
+			expect(() => compile('p{Bl}')).toThrow();
+			expect(() => compile('p{Cs}')).toThrow();
 		});
 	});
 });

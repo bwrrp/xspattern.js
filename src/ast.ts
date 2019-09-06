@@ -1,4 +1,5 @@
-import { Codepoint, PredicateFactory } from './sets';
+import { PredicateFactory } from './sets';
+import { Codepoint } from './types';
 
 export type Atom =
 	| { kind: 'codepoint'; value: Codepoint }
