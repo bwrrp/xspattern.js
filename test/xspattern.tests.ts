@@ -1,15 +1,15 @@
 import { compile, MatchFn } from '../src/index';
 
 expect.extend({
-	toBeMatchedBy(str: string, matcher: MatchFn) {
+	toBeMatchedBy(str: string, matcher: MatchFn, pattern: string) {
 		if (matcher(str)) {
 			return {
-				message: () => `Input "${str}" should not match`,
+				message: () => `Input "${str}" should not match pattern "${pattern}"`,
 				pass: true
 			};
 		} else {
 			return {
-				message: () => `Input "${str}" should match`,
+				message: () => `Input "${str}" should match pattern "${pattern}"`,
 				pass: false
 			};
 		}
@@ -20,21 +20,21 @@ function check(pattern: string, examples: string[], counterExamples: string[] = 
 	const match = compile(pattern)!;
 	expect(match).not.toBeNull();
 	examples.forEach(str => {
-		expect(str).toBeMatchedBy(match);
+		expect(str).toBeMatchedBy(match, pattern);
 	});
 	counterExamples.forEach(str => {
-		expect(str).not.toBeMatchedBy(match);
+		expect(str).not.toBeMatchedBy(match, pattern);
 	});
 }
 
 describe('xspattern', () => {
 	it('can compile a pattern', () => {
 		const match = compile('a|b')!;
-		expect('a').toBeMatchedBy(match);
-		expect('b').toBeMatchedBy(match);
-		expect('').not.toBeMatchedBy(match);
-		expect('c').not.toBeMatchedBy(match);
-		expect('aa').not.toBeMatchedBy(match);
+		expect('a').toBeMatchedBy(match, 'a|b');
+		expect('b').toBeMatchedBy(match, 'a|b');
+		expect('').not.toBeMatchedBy(match, 'a|b');
+		expect('c').not.toBeMatchedBy(match, 'a|b');
+		expect('aa').not.toBeMatchedBy(match, 'a|b');
 	});
 
 	it('throws if the pattern is not valid', () => {
