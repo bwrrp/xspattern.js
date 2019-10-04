@@ -83,7 +83,9 @@ charGroupPart
 
 singleChar
 	= SingleCharEsc
-	/ SingleCharNoEsc
+	/ (! "\\") codepoint:SingleCharNoEsc {
+		return codepoint;
+	}
 
 charRange
 	= first:singleCharWithHyphenAsNull "-" last:singleCharWithHyphenAsNull {

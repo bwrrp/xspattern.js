@@ -45,6 +45,7 @@ describe('xspattern', () => {
 		expect(() => compile('[--z]')).toThrow(
 			'unescaped hyphen may not be used as a range endpoint'
 		);
+		expect(() => compile('[\\p]')).toThrow();
 	});
 
 	it('supports basic branch / piece combinations', () => {
