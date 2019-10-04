@@ -32,11 +32,14 @@ export function packBlocks(data: string): PackedBlocks {
 	return { names, lengths };
 }
 
-export function unpackBlocks(packedBlocks: PackedBlocks): Map<string, Predicate> {
+export function unpackBlocks(
+	names: PackedBlocks['names'],
+	lengths: PackedBlocks['lengths']
+): Map<string, Predicate> {
 	const predicateByNormalizedBlockId: Map<string, Predicate> = new Map();
 	let first: Codepoint = 0;
-	packedBlocks.names.forEach((name: string | null, index: number) => {
-		const length = packedBlocks.lengths[index];
+	names.forEach((name: string | null, index: number) => {
+		const length = lengths[index];
 		if (name !== null) {
 			predicateByNormalizedBlockId.set(name, charRange(first, first + length - 1));
 		}

@@ -6,10 +6,19 @@
 		"strict": true,
 		"module": "commonjs",
 		"target": "es6",
-		"lib": ["es2015"],
+		"lib": [
+			"es2015"
+		],
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
-		"types": ["jest"]
+		"esModuleInterop": true,
+		"types": [
+			"jest"
+		]
 	},
-	"include": ["src/**/*", "test/**/*", "lib/parser.js"]
+	"include": [
+		"src/**/*",
+		"test/**/*",
+		"lib/parser.js"
+	]
 }

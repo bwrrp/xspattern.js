@@ -1,5 +1,5 @@
-import * as blocks from './generated/blocks.json';
-import * as categories from './generated/categories.json';
+import { names as blockNames, lengths as blockLengths } from './generated/blocks.json';
+import categories from './generated/categories.json';
 
 import { singleChar, charRange, everything, union } from './basic-sets';
 import { Codepoint, Predicate } from './types';
@@ -30,7 +30,7 @@ function difference(predicate: Predicate, except: Predicate | null): Predicate {
 	return codepoint => predicate(codepoint) && !except(codepoint);
 }
 
-const predicateByNormalizedBlockId: Map<string, Predicate> = unpackBlocks(blocks);
+const predicateByNormalizedBlockId: Map<string, Predicate> = unpackBlocks(blockNames, blockLengths);
 const predicateByCategory: Map<string, Predicate> = unpackCategories(categories);
 
 function unicodeBlock(identifier: string): Predicate {

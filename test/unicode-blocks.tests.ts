@@ -17,7 +17,7 @@ describe('unicode blocks packing', () => {
 
 	it('can unpack to the correct predicates', () => {
 		const packed = packBlocks(blocks);
-		const unpacked = unpackBlocks(packed);
+		const unpacked = unpackBlocks(packed.names, packed.lengths);
 		expect(unpacked.get('Meep')).not.toBeUndefined();
 		expect(unpacked.get('MaapMaap')).not.toBeUndefined();
 		expect(unpacked.get('MuupMuup-Muup123')).not.toBeUndefined();
