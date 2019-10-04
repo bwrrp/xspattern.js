@@ -239,7 +239,7 @@ export function unpackCategories(packed: string): Map<string, Predicate> {
 			i += 2;
 		}
 		switch (catIndex) {
-			case -2:
+			case -2: {
 				let actualCatIndex = 0;
 				for (let codepoint = first; codepoint < first + length; ++codepoint) {
 					const parts = partsByCatIndex[actualCatIndex];
@@ -247,12 +247,13 @@ export function unpackCategories(packed: string): Map<string, Predicate> {
 					actualCatIndex = (actualCatIndex + 1) % 2;
 				}
 				break;
+			}
 
 			case -1:
 				// Gap, ignore
 				break;
 
-			default:
+			default: {
 				const parts = partsByCatIndex[catIndex];
 				if (length === 1) {
 					parts.push(singleChar(first));
@@ -260,6 +261,7 @@ export function unpackCategories(packed: string): Map<string, Predicate> {
 					parts.push(charRange(first, first + length - 1));
 				}
 				break;
+			}
 		}
 		first += length;
 	}
