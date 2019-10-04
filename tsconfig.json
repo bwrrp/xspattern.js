@@ -19,6 +19,7 @@
 	"include": [
 		"src/**/*",
 		"test/**/*",
-		"lib/parser.js"
+		"lib/parser.js",
+		"dist/xspattern.mjs"
 	]
 }
