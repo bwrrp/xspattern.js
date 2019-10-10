@@ -1,4 +1,16 @@
-import { filter, map, optional, or, plus, star, then, token, not } from '../src/parser-combinators';
+import {
+	filter,
+	map,
+	optional,
+	or,
+	plus,
+	star,
+	then,
+	token,
+	not,
+	recognize,
+	delimited
+} from '../src/parser-combinators';
 
 describe('parser combinators', () => {
 	describe('token', () => {
@@ -42,14 +54,36 @@ describe('parser combinators', () => {
 			expect((res2 as any).value).toBe('a');
 			expect(res2.offset).toBe(3);
 		});
+
+		it('replaces the expected value for child errors only if the child fails at the same offset', () => {
+			const parser = filter(then(token('a'), token('b'), (a, b) => b + a), () => true, [
+				'expected'
+			]);
+			const res1 = parser('bb', 0);
+			expect(res1.success).toBe(false);
+			expect(res1.offset).toBe(0);
+			expect((res1 as any).expected).toEqual(['expected']);
+
+			const res2 = parser('aa', 0);
+			expect(res2.success).toBe(false);
+			expect(res2.offset).toBe(1);
+			expect((res2 as any).expected).toEqual(['b']);
+		});
 	});
 
 	describe('or', () => {
-		it('runs parsers until a match', () => {
+		it('runs parsers until one matches', () => {
 			const parser = or([token('a'), token('b')]);
 			expect(parser('a', 0).success).toBe(true);
 			expect(parser('b', 0).success).toBe(true);
 			expect(parser('c', 0).success).toBe(false);
+		});
+
+		it('never matches with no child parsers, which would be silly anyway', () => {
+			const parser = or([]);
+			expect(parser('a', 0).success).toBe(false);
+			expect(parser('a', 0).offset).toBe(0);
+			expect((parser('a', 0) as any).expected).toEqual([]);
 		});
 	});
 
@@ -125,6 +159,21 @@ describe('parser combinators', () => {
 			const parser = not(token('a'), ['not a']);
 			expect(parser('b', 0).success).toBe(true);
 			expect(parser('b', 0).offset).toBe(0);
+		});
+	});
+
+	describe('recognize', () => {
+		it('returns the part of the matched input accepted by the child parser', () => {
+			const parser = recognize(delimited(token('{'), token('meep'), token('}')));
+			const res1 = parser('{meep}', 0);
+			expect(res1.success).toBe(true);
+			expect(res1.offset).toBe(6);
+			expect((res1 as any).value).toBe('{meep}');
+
+			const res2 = parser('{maap}', 0);
+			expect(res2.success).toBe(false);
+			expect(res2.offset).toBe(1);
+			expect((res2 as any).expected).toEqual(['meep']);
 		});
 	});
 });
