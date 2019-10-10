@@ -21,7 +21,18 @@ import {
 	then,
 	token
 } from './parser-combinators';
-import sets, { asCodepoint } from './sets';
+import {
+	asCodepoint,
+	charRange as charRangePredicate,
+	complement,
+	difference,
+	multiChar,
+	singleChar as singleCharPredicate,
+	unicodeBlock,
+	unicodeCategory,
+	union,
+	wildcard
+} from './sets';
 import { Codepoint, Predicate } from './types';
 
 // Tokens
@@ -94,7 +105,7 @@ function categoryIdentifier(primary: string, secondaries: string): Parser<Predic
 		optional(
 			filter(codepoint, codepoint => secondaryChars.has(codepoint), secondaries.split(''))
 		),
-		(p, s) => sets.category(s === null ? p : p + String.fromCodePoint(s))
+		(p, s) => unicodeCategory(s === null ? p : p + String.fromCodePoint(s))
 	);
 }
 
@@ -119,18 +130,18 @@ const IsCategory: Parser<Predicate> = or([
 // Block Escape
 
 const isBlockIdentifierChar: Predicate = [
-	sets.charRange(asCodepoint('a'), asCodepoint('z')),
-	sets.charRange(asCodepoint('A'), asCodepoint('Z')),
-	sets.charRange(asCodepoint('0'), asCodepoint('9')),
-	sets.singleChar(0x2d)
-].reduce(sets.union);
+	charRangePredicate(asCodepoint('a'), asCodepoint('z')),
+	charRangePredicate(asCodepoint('A'), asCodepoint('Z')),
+	charRangePredicate(asCodepoint('0'), asCodepoint('9')),
+	singleCharPredicate(0x2d)
+].reduce(union);
 
 const IsBlock: Parser<Predicate> = map(
 	preceded(
 		token('Is'),
 		recognize(plus(filter(codepoint, isBlockIdentifierChar, ['block identifier'])))
 	),
-	sets.block
+	unicodeBlock
 );
 
 // Category Escape
@@ -141,7 +152,7 @@ const catEsc: Parser<Predicate> = delimited(token('\\p{'), charProp, BRACE_CLOSE
 
 const complEsc: Parser<Predicate> = map(
 	delimited(token('\\P{'), charProp, BRACE_CLOSE, true),
-	sets.complement
+	complement
 );
 
 // Multi-Character Escape
@@ -149,12 +160,12 @@ const complEsc: Parser<Predicate> = map(
 const MultiCharEsc: Parser<Predicate> = preceded(
 	BACKSLASH,
 	map(
-		or('sSiIcCdDwW'.split('').map(c => token(c))) as Parser<keyof typeof sets.multiChar>,
-		c => sets.multiChar[c]
+		or('sSiIcCdDwW'.split('').map(c => token(c))) as Parser<keyof typeof multiChar>,
+		c => multiChar[c]
 	)
 );
 
-const WildcardEsc: Parser<Predicate> = map(PERIOD, () => sets.wildcard);
+const WildcardEsc: Parser<Predicate> = map(PERIOD, () => wildcard);
 
 // Character Class Escape
 
@@ -179,7 +190,7 @@ const singleCharHyphenAsNull: Parser<Codepoint | null> = or([map(HYPHEN, () => n
 const charRange: Parser<Predicate> = then(
 	singleCharHyphenAsNull,
 	preceded(HYPHEN, singleCharHyphenAsNull),
-	sets.charRange
+	charRangePredicate
 );
 
 // Character Group Part
@@ -206,7 +217,7 @@ const singleCharWithHyphenRules: Parser<Codepoint> = or([
 
 const charGroupPartsWithHyphenRules: Parser<Predicate[]> = or([
 	then(
-		map(singleCharWithHyphenRules, sets.singleChar),
+		map(singleCharWithHyphenRules, singleCharPredicate),
 		or([charGroupPartsWithHyphenRulesIndirect, assertEndOfCharGroup]),
 		cons
 	),
@@ -222,7 +233,7 @@ function charGroupPartsWithHyphenRulesIndirect(
 
 const charGroupParts: Parser<Predicate[]> = or([
 	then(
-		map(singleChar, sets.singleChar),
+		map(singleChar, singleCharPredicate),
 		or([charGroupPartsWithHyphenRules, assertEndOfCharGroup]),
 		cons
 	),
@@ -235,18 +246,18 @@ function charGroupPartsIndirect(input: string, offset: number): ParseResult<Pred
 
 // Positive Character Group
 
-const posCharGroup: Parser<Predicate> = map(charGroupParts, parts => parts.reduce(sets.union));
+const posCharGroup: Parser<Predicate> = map(charGroupParts, parts => parts.reduce(union));
 
 // Negative Character Group
 
-const negCharGroup: Parser<Predicate> = map(preceded(CARET, posCharGroup), sets.complement);
+const negCharGroup: Parser<Predicate> = map(preceded(CARET, posCharGroup), complement);
 
 // Character Group
 
 const charGroup: Parser<Predicate> = then(
 	or([preceded(not(CARET, ['not ^']), posCharGroup), negCharGroup]),
 	optional(preceded(HYPHEN, charClassExprIndirect)),
-	sets.difference
+	difference
 );
 
 // Character Class Expression
@@ -260,7 +271,7 @@ function charClassExprIndirect(input: string, offset: number): ParseResult<Predi
 // Character Class
 
 const charClass: Parser<Predicate> = or([
-	map(SingleCharEsc, sets.singleChar),
+	map(SingleCharEsc, singleCharPredicate),
 	charClassEsc,
 	charClassExpr,
 	WildcardEsc
@@ -276,7 +287,7 @@ const NormalChar: Parser<Codepoint> = filter(codepoint, codepoint => !metachars.
 // Atom
 
 const atom: Parser<Atom> = or<Atom>([
-	map(NormalChar, codepoint => ({ kind: 'predicate', value: sets.singleChar(codepoint) })),
+	map(NormalChar, codepoint => ({ kind: 'predicate', value: singleCharPredicate(codepoint) })),
 	map(charClass, predicate => ({ kind: 'predicate', value: predicate })),
 	map(delimited(PARENTHESIS_OPEN, regexpIndirect, PARENTHESIS_CLOSE, true), regexp => ({
 		kind: 'regexp',
@@ -287,7 +298,7 @@ const atom: Parser<Atom> = or<Atom>([
 // Quantifier
 
 const zeroCodepoint = asCodepoint('0');
-const isDigit = sets.charRange(zeroCodepoint, asCodepoint('9'));
+const isDigit = charRangePredicate(zeroCodepoint, asCodepoint('9'));
 const QuantExact: Parser<number> = map(
 	plus(map(filter(codepoint, isDigit, ['digit']), codepoint => codepoint - zeroCodepoint)),
 	digits => digits.reduce((num, digit) => num * 10 + digit)
