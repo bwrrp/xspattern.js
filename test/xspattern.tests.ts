@@ -17,7 +17,7 @@ expect.extend({
 });
 
 function check(pattern: string, examples: string[], counterExamples: string[] = []) {
-	const match = compile(pattern)!;
+	const match = compile(pattern);
 	expect(match).not.toBeNull();
 	examples.forEach(str => {
 		expect(str).toBeMatchedBy(match, pattern);
@@ -29,7 +29,8 @@ function check(pattern: string, examples: string[], counterExamples: string[] = 
 
 describe('xspattern', () => {
 	it('can compile a pattern', () => {
-		const match = compile('a|b')!;
+		const match = compile('a|b');
+		expect('a|b').not.toBeMatchedBy(match, 'a|b');
 		expect('a').toBeMatchedBy(match, 'a|b');
 		expect('b').toBeMatchedBy(match, 'a|b');
 		expect('').not.toBeMatchedBy(match, 'a|b');
@@ -45,8 +46,12 @@ describe('xspattern', () => {
 		expect(() => compile('[--z]')).toThrow(
 			'unescaped hyphen may not be used as a range endpoint'
 		);
+		expect(() => compile('[z--]')).toThrow(
+			'unescaped hyphen may not be used as a range endpoint'
+		);
 		expect(() => compile('\\1')).toThrow();
 		expect(() => compile('[\\p]')).toThrow();
+		expect(() => compile('[X-\\D]')).toThrow();
 		expect(() => compile('[z-a]')).toThrow('character range is in the wrong order');
 	});
 
@@ -68,6 +73,11 @@ describe('xspattern', () => {
 		check('a{2}', ['aa'], ['', 'a', 'aaa', 'aaaaa']);
 		check('a{0,2}', ['', 'a', 'aa'], ['aaa', 'aaaaa']);
 		check('a{0,0}', [''], ['a', 'aa', 'aaa', 'b']);
+		check(
+			'a{10,20}',
+			['aaaaaaaaaa', 'aaaaaaaaaaaa', 'aaaaaaaaaaaaaaaaaaaa'],
+			['a', 'aaaaaaaaa', 'aaaaaaaaaaaaaaaaaaaaa', 'b']
+		);
 	});
 
 	it('handles surrogate pairs', () => {
@@ -113,6 +123,7 @@ describe('xspattern', () => {
 	});
 
 	it('supports character group subtraction', () => {
+		check('[\\d-[5]]', [], ['a', 'b']);
 		check('[abcd-[cdef]]', ['a', 'b'], ['c', 'd', 'e', 'f', 'g']);
 		check('[a-z-[aeoui]]', ['b', 'd', 'z'], ['a', 'u', 'o']);
 		check('[a--[a]]', ['-'], ['a', 'b']);
@@ -188,8 +199,8 @@ describe('xspattern', () => {
 		});
 
 		it("throws if the pattern contains a unicode category that doesn't exist", () => {
-			expect(() => compile('p{Bl}')).toThrow();
-			expect(() => compile('p{Cs}')).toThrow();
+			expect(() => compile('\\p{Bl}')).toThrow();
+			expect(() => compile('\\p{Cs}')).toThrow();
 		});
 	});
 });

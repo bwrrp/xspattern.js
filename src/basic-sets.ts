@@ -4,7 +4,7 @@ export function singleChar(expected: Codepoint): Predicate {
 	return codepoint => codepoint === expected;
 }
 
-export function charRange(first: Codepoint, last: Codepoint): Predicate {
+export function charRange(first: Codepoint | null, last: Codepoint | null): Predicate {
 	// It is an error if either of the two singleChars in a charRange is a
 	// SingleCharNoEsc comprising an unescaped hyphen
 	if (first === null || last === null) {

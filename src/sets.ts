@@ -6,21 +6,12 @@ import { Codepoint, Predicate } from './types';
 import { unpackBlocks } from './unicode-blocks';
 import { unpackCategories } from './unicode-categories';
 
-export type PredicateFactory = (sets: Sets) => Predicate;
-
-function asCodepoint(char: string): number {
+export function asCodepoint(char: string): Codepoint {
 	return char.codePointAt(0)!;
 }
 
 function complement(predicate: Predicate): Predicate {
 	return codepoint => !predicate(codepoint);
-}
-
-function maybeUnion(first: Predicate, next: Predicate | null): Predicate {
-	if (next === null) {
-		return first;
-	}
-	return union(first, next);
 }
 
 function difference(predicate: Predicate, except: Predicate | null): Predicate {
@@ -109,7 +100,7 @@ function wildcard(codepoint: Codepoint): boolean {
 
 const sets = {
 	complement,
-	union: maybeUnion,
+	union,
 	difference,
 
 	singleChar,

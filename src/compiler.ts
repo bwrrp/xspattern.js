@@ -1,20 +1,13 @@
 import { Assembler } from 'whynot';
 import { RegExp, Branch, Piece, Atom } from './ast';
-import sets from './sets';
 
 type RegExpAssembler = Assembler<number, void>;
 
 function compileAtom(assembler: RegExpAssembler, atom: Atom): void {
 	switch (atom.kind) {
-		case 'codepoint':
-			// Value is a single code point to test
-			assembler.test(sets.singleChar(atom.value));
-			return;
-
 		case 'predicate': {
-			// Value is a factory that builds the predicate function for some character class
-			const predicate = atom.value(sets);
-			assembler.test(predicate);
+			// Value is a predicate function for some character class
+			assembler.test(atom.value);
 			return;
 		}
 
