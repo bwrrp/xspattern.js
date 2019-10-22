@@ -2,4 +2,10 @@ language: node_js
 node_js:
   - "10"
 install:
+  - wget https://github.com/w3c/xsdtests/archive/master.zip -O /tmp/master.zip
+  - unzip /tmp/master.zip
   - npm install
+before_script:
+  - export XML_SCHEMA_TESTS_PATH=$PWD/xsdtests-master
+script:
+  - npm t -- --verbose false
