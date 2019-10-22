@@ -23,18 +23,10 @@ function readXml(path) {
 }
 
 const KNOWN_FAILURES = new Set([
-	// Removed unicode blocks
-	// TODO: add support for those
-	'reM43',
-	'reM78',
-	'reM99',
-	'reN8',
-	'reN43',
-	'reN98',
 	// Category assignment changed: https://github.com/w3c/xsdtests/issues/2
-	'reZ003v'
+	'reZ003v',
 	// Parser bug: https://github.com/lddubeau/saxes/issues/24//
-	//'RegexTest_63'
+	'RegexTest_63'
 ]);
 
 function getSimpleTypes(schemaPath) {

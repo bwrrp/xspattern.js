@@ -8,11 +8,21 @@ const blocks = `
 00AA..00BB; Muup Muup-Muup 123
 `;
 
+const blocksWithAlias = `
+0000..00FF; Greek and Coptic
+`;
+
 describe('unicode blocks packing', () => {
 	it('can pack correctly', () => {
 		const packed = packBlocks(blocks);
 		expect(packed.names).toEqual(['Meep', 'MaapMaap', null, 'MuupMuup-Muup123']);
 		expect(packed.lengths).toEqual([128, 18, 24, 18]);
+	});
+
+	it('can add aliases', () => {
+		const packed = packBlocks(blocksWithAlias);
+		expect(packed.names).toEqual(['GreekandCoptic|Greek']);
+		expect(packed.lengths).toEqual([256]);
 	});
 
 	it('can unpack to the correct predicates', () => {
@@ -47,5 +57,12 @@ describe('unicode blocks packing', () => {
 			expect(unpacked.get('MaapMaap')!(codepoint)).toBe(false);
 			expect(unpacked.get('MuupMuup-Muup123')!(codepoint)).toBe(false);
 		}
+	});
+
+	it('can unpack aliases', () => {
+		const packed = packBlocks(blocksWithAlias);
+		const unpacked = unpackBlocks(packed.names, packed.lengths);
+		expect(unpacked.get('GreekandCoptic')).not.toBe(undefined);
+		expect(unpacked.get('Greek')).not.toBe(undefined);
 	});
 });
