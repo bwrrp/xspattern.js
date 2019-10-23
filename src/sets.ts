@@ -41,7 +41,7 @@ export function unicodeCategory(identifier: string): Predicate {
 	// If is unreachable, as the parser will never match unsupported identifiers
 	/* istanbul ignore if */
 	if (predicate == undefined) {
-		throw new Error(`Invalid pattern: ${identifier} is not a valid unicode category`);
+		throw new Error(`${identifier} is not a valid unicode category`);
 	}
 	return predicate;
 }

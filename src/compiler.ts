@@ -47,9 +47,6 @@ function compilePiece(assembler: RegExpAssembler, piece: Piece): void {
 	}
 
 	// Bounded repetition
-	if (max < min) {
-		throw new Error('Invalid pattern: quantifier range is in the wrong order');
-	}
 	for (let i = 0; i < min; ++i) {
 		compileAtom(assembler, atomAst);
 	}

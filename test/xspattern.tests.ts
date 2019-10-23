@@ -40,19 +40,23 @@ describe('xspattern', () => {
 
 	it('throws if the pattern is not valid', () => {
 		// TODO: clean up errors thrown by the PEG parser?
-		expect(() => compile('\\')).toThrow();
-		expect(() => compile('a{3,2}')).toThrow('quantifier range is in the wrong order');
-		expect(() => compile('[^]')).toThrow();
+		expect(() => compile('\\')).toThrow('Error parsing pattern "\\" at offset 0');
+		expect(() => compile('a{3,2}')).toThrow(
+			'Error parsing pattern "a{3,2}": quantifier range is in the wrong order'
+		);
+		expect(() => compile('[^]')).toThrow('Error parsing pattern "[^]" at offset 2');
 		expect(() => compile('[--z]')).toThrow(
-			'unescaped hyphen may not be used as a range endpoint'
+			'Error parsing pattern "[--z]": unescaped hyphen may not be used as a range endpoint'
 		);
 		expect(() => compile('[z--]')).toThrow(
-			'unescaped hyphen may not be used as a range endpoint'
+			'Error parsing pattern "[z--]": unescaped hyphen may not be used as a range endpoint'
 		);
-		expect(() => compile('\\1')).toThrow();
-		expect(() => compile('[\\p]')).toThrow();
-		expect(() => compile('[X-\\D]')).toThrow();
-		expect(() => compile('[z-a]')).toThrow('character range is in the wrong order');
+		expect(() => compile('\\1')).toThrow('Error parsing pattern "\\1" at offset 0');
+		expect(() => compile('[\\p]')).toThrow('Error parsing pattern "[\\p]" at offset 2');
+		expect(() => compile('[X-\\D]')).toThrow('Error parsing pattern "[X-\\D]" at offset 4');
+		expect(() => compile('[z-a]')).toThrow(
+			'Error parsing pattern "[z-a]": character range is in the wrong order'
+		);
 	});
 
 	it('supports basic branch / piece combinations', () => {
@@ -199,8 +203,8 @@ describe('xspattern', () => {
 		});
 
 		it("throws if the pattern contains a unicode category that doesn't exist", () => {
-			expect(() => compile('\\p{Bl}')).toThrow();
-			expect(() => compile('\\p{Cs}')).toThrow();
+			expect(() => compile('\\p{Bl}')).toThrow('Error parsing pattern "\\p{Bl}" at offset 3');
+			expect(() => compile('\\p{Cs}')).toThrow('Error parsing pattern "\\p{Cs}" at offset 4');
 		});
 	});
 });

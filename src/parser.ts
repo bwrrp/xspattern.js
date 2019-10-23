@@ -304,11 +304,12 @@ const QuantExact: Parser<number> = map(
 	digits => digits.reduce((num, digit) => num * 10 + digit)
 );
 
-const quantRange: Parser<Quantifier> = then(
-	QuantExact,
-	preceded(COMMA, QuantExact),
-	(min, max) => ({ min, max })
-);
+const quantRange: Parser<Quantifier> = then(QuantExact, preceded(COMMA, QuantExact), (min, max) => {
+	if (max < min) {
+		throw new Error('quantifier range is in the wrong order');
+	}
+	return { min, max };
+});
 
 const quantMin: Parser<Quantifier> = then(QuantExact, COMMA, min => ({ min, max: null }));
 
@@ -347,20 +348,27 @@ function regexpIndirect(input: string, offset: number): ParseResult<RegExp> {
 	return regexp(input, offset);
 }
 
-function throwParseError(offset: number, expected: string[]): never {
+function throwParseError(input: string, offset: number, expected: string[]): never {
+	const quoted = expected.map(str => `"${str}"`);
 	throw new Error(
-		`Parse error at offset ${offset}, expected ${
-			expected.length > 1 ? 'one of ' + expected.join(', ') : expected[0]
-		}`
+		`Error parsing pattern "${input}" at offset ${offset}: expected ${
+			quoted.length > 1 ? 'one of ' + quoted.join(', ') : quoted[0]
+		} but found "${input.slice(offset, offset + 1)}"`
 	);
 }
 
 const completeRegexp: Parser<RegExp> = complete(regexp);
 
 export function parse(input: string): RegExp {
-	const res = completeRegexp(input, 0);
+	let res: ParseResult<RegExp>;
+	try {
+		res = completeRegexp(input, 0);
+	} catch (error) {
+		// Generic error
+		throw new Error(`Error parsing pattern "${input}": ${error.message}`);
+	}
 	if (!res.success) {
-		return throwParseError(res.offset, res.expected);
+		return throwParseError(input, res.offset, res.expected);
 	}
 	return res.value;
 }
