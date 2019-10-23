@@ -24,9 +24,7 @@ function readXml(path) {
 
 const KNOWN_FAILURES = new Set([
 	// Category assignment changed: https://github.com/w3c/xsdtests/issues/2
-	'reZ003v',
-	// Parser bug: https://github.com/lddubeau/saxes/issues/24//
-	'RegexTest_63'
+	'reZ003v'
 ]);
 
 function getSimpleTypes(schemaPath) {
