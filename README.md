@@ -1,4 +1,4 @@
-# xspattern.js
+# xspattern
 
 [![NPM version](https://badge.fury.io/js/xspattern.svg)](https://badge.fury.io/js/xspattern)
 [![Build Status](https://travis-ci.org/bwrrp/xspattern.js.svg?branch=master)](https://travis-ci.org/bwrrp/xspattern.js)
@@ -6,10 +6,15 @@
 
 XML Schema Regular Expression engine
 
-This library implements a regular expression engine for the regular
+This library is a complete implementation of an engine for the regular
 expression language defined in XML Schema 1.0 and 1.1. It follows the XML
 Schema 1.1 specification, which corrects some errors in earlier versions but
-is otherwise fully compatible.
+should be considered fully compatible with XML Schema 1.0.
+
+For Unicode-related functionality, this implementation follows Unicode
+version 12.1.0. For compatibility with XML Schema 1.0, Unicode block names
+that existed in Unicode 3.1.0 are accepted as aliases for their current
+counterparts in `\p{Is...}` and `\P{Is...}` expressions.
 
 ## Installation
 
@@ -25,8 +30,10 @@ or
 yarn add xspattern
 ```
 
-The package includes both a CommonJS bundle (`dist/xspattern.js`) and an ES6
-module (`dist/xspattern.mjs`).
+The package includes both a UMD bundle (`dist/xspattern.js`), compatible with
+Node.js, and an ES6 module (`dist/xspattern.mjs`). The `whynot` library is
+used as a dependency, but is not included in the bundles. It should be
+automatically installed and included in most configurations.
 
 ## Usage
 
