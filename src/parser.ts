@@ -1,4 +1,3 @@
-import { Atom, Branch, Piece, Quantifier, RegExp } from './ast';
 import {
 	complete,
 	cut,
@@ -20,7 +19,8 @@ import {
 	star,
 	then,
 	token
-} from './parser-combinators';
+} from 'prsc';
+import { Atom, Branch, Piece, Quantifier, RegExp } from './ast';
 import {
 	asCodepoint,
 	charRange as charRangePredicate,
