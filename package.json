@@ -29,7 +29,7 @@
 		"url": "https://github.com/bwrrp/xspattern.js"
 	},
 	"dependencies": {
-		"prsc": "^0.1.0",
+		"prsc": "^1.0.0",
 		"whynot": "^3.0.2"
 	},
 	"devDependencies": {
