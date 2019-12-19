@@ -80,6 +80,16 @@ describe('xspattern', () => {
 			expect('b').not.toBeMatchedBy(match, 'a\\$');
 			expect('ab').not.toBeMatchedBy(match, 'a\\$');
 		});
+
+		it('allows "(?:)" for non-capturing groups', () => {
+			const match = compile('(?:a|b)?c', { language: 'xpath' });
+			expect('ac').toBeMatchedBy(match, '(?:a|b)?c');
+			expect('bc').toBeMatchedBy(match, '(?:a|b)?c');
+			expect('c').toBeMatchedBy(match, '(?:a|b)?c');
+			expect('a').not.toBeMatchedBy(match, '(?:a|b)?c');
+			expect('b').not.toBeMatchedBy(match, '(?:a|b)?c');
+			expect('x').not.toBeMatchedBy(match, '(?:a|b)?c');
+		});
 	});
 
 	it('can compile a pattern', () => {

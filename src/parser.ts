@@ -349,18 +349,41 @@ export function generateParser(options: { language: string }): (input: string) =
 
 	// Atom
 
-	const atom: Parser<Atom> = or<Atom>([
-		map(NormalChar, codepoint => ({
-			kind: 'predicate',
-			value: singleCharPredicate(codepoint)
-		})),
-		map(charClass, predicate => ({ kind: 'predicate', value: predicate })),
-		map(delimited(PARENTHESIS_OPEN, regexpIndirect, PARENTHESIS_CLOSE, true), regexp => ({
-			kind: 'regexp',
-			value: regexp
-		}))
-	]);
-
+	const atom: Parser<Atom> =
+		options.language === 'xpath'
+			? or<Atom>([
+					map(NormalChar, codepoint => ({
+						kind: 'predicate',
+						value: singleCharPredicate(codepoint)
+					})),
+					map(charClass, predicate => ({ kind: 'predicate', value: predicate })),
+					map(
+						delimited(
+							PARENTHESIS_OPEN,
+							preceded(optional(token('?:')), regexpIndirect),
+							PARENTHESIS_CLOSE,
+							true
+						),
+						regexp => ({
+							kind: 'regexp',
+							value: regexp
+						})
+					)
+			  ])
+			: or<Atom>([
+					map(NormalChar, codepoint => ({
+						kind: 'predicate',
+						value: singleCharPredicate(codepoint)
+					})),
+					map(charClass, predicate => ({ kind: 'predicate', value: predicate })),
+					map(
+						delimited(PARENTHESIS_OPEN, regexpIndirect, PARENTHESIS_CLOSE, true),
+						regexp => ({
+							kind: 'regexp',
+							value: regexp
+						})
+					)
+			  ]);
 	// Quantifier
 
 	const zeroCodepoint = asCodepoint('0');
