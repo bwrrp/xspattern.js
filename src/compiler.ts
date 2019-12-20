@@ -13,7 +13,7 @@ function compileAtom(assembler: RegExpAssembler, atom: Atom): void {
 
 		case 'regexp':
 			// Value is a nested RegExp
-			compileRegExp(assembler, atom.value);
+			compileRegExp(assembler, atom.value, false);
 			return;
 	}
 }
@@ -67,9 +67,24 @@ function compileBranch(assembler: RegExpAssembler, branch: Branch): void {
 	});
 }
 
-export function compileRegExp(assembler: RegExpAssembler, regExp: RegExp): void {
+export function compileRegExp(
+	assembler: RegExpAssembler,
+	regExp: RegExp,
+	matchSubstring: boolean
+): void {
+	const start = assembler.program.length;
+
 	// Disjunction of branches
 	const fork = assembler.jump([]);
+
+	// If we are compiling an XPath-style pattern, add a set of jumps and accepts to add the 'match
+	// anywhere' behavior at the start.
+	if (matchSubstring) {
+		fork.data.push(assembler.program.length);
+		assembler.test(() => true);
+		assembler.jump([start]);
+	}
+
 	// TODO: I should really export Instruction from whynot...
 	const joins: (typeof fork)[] = [];
 	regExp.forEach(branch => {
@@ -80,4 +95,18 @@ export function compileRegExp(assembler: RegExpAssembler, regExp: RegExp): void 
 	joins.forEach(join => {
 		join.data.push(assembler.program.length);
 	});
+
+	// Add a jump and all-accepting test for the 'end' of the program to add the 'match anything'
+	// behavior at the end.
+	if (matchSubstring) {
+		const beforeFork = assembler.program.length;
+		const forkForEnd = assembler.jump([]);
+		forkForEnd.data.push(assembler.program.length);
+		// Allow everything
+		assembler.test(() => true);
+		// And allow it multiple times
+		assembler.jump([beforeFork]);
+		// Or skip it completely
+		forkForEnd.data.push(assembler.program.length);
+	}
 }

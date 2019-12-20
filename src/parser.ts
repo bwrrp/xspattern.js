@@ -21,6 +21,7 @@ import {
 	token
 } from 'prsc';
 import { Atom, Branch, Piece, Quantifier, RegExp } from './ast';
+import { INPUT_END_SENTINAL, INPUT_START_SENTINAL } from './basic-sets';
 import {
 	asCodepoint,
 	charRange as charRangePredicate,
@@ -325,8 +326,8 @@ export function generateParser(options: { language: string }): (input: string) =
 					charClassEsc,
 					charClassExpr,
 					WildcardEsc,
-					map(CARET, () => (c: Codepoint) => c === -1),
-					map(DOLLAR, () => (c: Codepoint) => c === -2)
+					map(CARET, () => (c: Codepoint) => c === INPUT_START_SENTINAL),
+					map(DOLLAR, () => (c: Codepoint) => c === INPUT_END_SENTINAL)
 			  ])
 			: or([
 					map(SingleCharEsc, singleCharPredicate),
@@ -462,16 +463,6 @@ export function generateParser(options: { language: string }): (input: string) =
 		}
 		if (!res.success) {
 			return throwParseError(input, res.offset, res.expected);
-		}
-
-		if (options.language === 'xpath') {
-			return [
-				[
-					[{ kind: 'predicate', value: () => true }, { min: 0, max: null }],
-					[{ kind: 'regexp', value: res.value }, { min: 1, max: 1 }],
-					[{ kind: 'predicate', value: () => true }, { min: 0, max: null }]
-				]
-			];
 		}
 
 		return res.value;

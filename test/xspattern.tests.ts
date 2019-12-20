@@ -31,6 +31,8 @@ describe('xspattern', () => {
 	describe('xpath', () => {
 		it('can match substrings instead of full strings', () => {
 			const match = compile('a|b', { language: 'xpath' });
+			expect('xxxa').toBeMatchedBy(match, 'a|b');
+			expect('axxx').toBeMatchedBy(match, 'a|b');
 			expect('xxxaxxx').toBeMatchedBy(match, 'a|b');
 			expect('xxxbxxx').toBeMatchedBy(match, 'a|b');
 			expect('xxxyxxx').not.toBeMatchedBy(match, 'a|b');
