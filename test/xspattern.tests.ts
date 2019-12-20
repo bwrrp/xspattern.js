@@ -28,6 +28,72 @@ function check(pattern: string, examples: string[], counterExamples: string[] = 
 }
 
 describe('xspattern', () => {
+	describe('xpath', () => {
+		it('can match substrings instead of full strings', () => {
+			const match = compile('a|b', { language: 'xpath' });
+			expect('xxxa').toBeMatchedBy(match, 'a|b');
+			expect('axxx').toBeMatchedBy(match, 'a|b');
+			expect('xxxaxxx').toBeMatchedBy(match, 'a|b');
+			expect('xxxbxxx').toBeMatchedBy(match, 'a|b');
+			expect('xxxyxxx').not.toBeMatchedBy(match, 'a|b');
+		});
+
+		it('can match the start of the string with "^"', () => {
+			const match = compile('^a', { language: 'xpath' });
+			expect('abc').toBeMatchedBy(match, '^a');
+			expect('a').toBeMatchedBy(match, '^a');
+			expect('b').not.toBeMatchedBy(match, '^a');
+			expect('ba').not.toBeMatchedBy(match, '^a');
+		});
+
+		it('can match the end of the string with "$"', () => {
+			const match = compile('a$', { language: 'xpath' });
+			expect('a').toBeMatchedBy(match, 'a$');
+			expect('ba').toBeMatchedBy(match, 'a$');
+			expect('b').not.toBeMatchedBy(match, 'a$');
+			expect('ab').not.toBeMatchedBy(match, 'a$');
+		});
+
+		it('can match the end of the string halfway a pattern', () => {
+			const match = compile('a($|x)', { language: 'xpath' });
+			expect('a').toBeMatchedBy(match, 'a($|x)');
+			expect('ba').toBeMatchedBy(match, 'a($|x)');
+			expect('ax').toBeMatchedBy(match, 'a($|x)');
+			expect('b').not.toBeMatchedBy(match, 'a($|x)');
+			expect('ab').not.toBeMatchedBy(match, 'a($|x)');
+		});
+
+		it('can escape "^"', () => {
+			const match = compile('a\\^', { language: 'xpath' });
+			expect('a^').toBeMatchedBy(match, 'a\\^');
+			expect('xa^x').toBeMatchedBy(match, 'a\\^');
+			expect('a').not.toBeMatchedBy(match, 'a\\^');
+			expect('ax').not.toBeMatchedBy(match, 'a\\^');
+			expect('b').not.toBeMatchedBy(match, 'a\\^');
+			expect('ab').not.toBeMatchedBy(match, 'a\\^');
+		});
+
+		it('can escape "$"', () => {
+			const match = compile('a\\$', { language: 'xpath' });
+			expect('a$').toBeMatchedBy(match, 'a\\$');
+			expect('xa$x').toBeMatchedBy(match, 'a\\$');
+			expect('a').not.toBeMatchedBy(match, 'a\\$');
+			expect('ax').not.toBeMatchedBy(match, 'a\\$');
+			expect('b').not.toBeMatchedBy(match, 'a\\$');
+			expect('ab').not.toBeMatchedBy(match, 'a\\$');
+		});
+
+		it('allows "(?:)" for non-capturing groups', () => {
+			const match = compile('(?:a|b)?c', { language: 'xpath' });
+			expect('ac').toBeMatchedBy(match, '(?:a|b)?c');
+			expect('bc').toBeMatchedBy(match, '(?:a|b)?c');
+			expect('c').toBeMatchedBy(match, '(?:a|b)?c');
+			expect('a').not.toBeMatchedBy(match, '(?:a|b)?c');
+			expect('b').not.toBeMatchedBy(match, '(?:a|b)?c');
+			expect('x').not.toBeMatchedBy(match, '(?:a|b)?c');
+		});
+	});
+
 	it('can compile a pattern', () => {
 		const match = compile('a|b');
 		expect('a|b').not.toBeMatchedBy(match, 'a|b');

@@ -32,3 +32,6 @@ export function nothing(): boolean {
 export function union(first: Predicate, next: Predicate): Predicate {
 	return codepoint => first(codepoint) || next(codepoint);
 }
+
+export const INPUT_START_SENTINAL = -1;
+export const INPUT_END_SENTINAL = -2;
