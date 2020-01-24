@@ -16,8 +16,8 @@ expect.extend({
 	}
 });
 
-function check(pattern: string, examples: string[], counterExamples: string[] = []) {
-	const match = compile(pattern);
+function check(pattern: string, examples: string[], counterExamples: string[] = [], xpath = false) {
+	const match = compile(pattern, { language: xpath ? 'xpath' : 'xsd' });
 	expect(match).not.toBeNull();
 	examples.forEach(str => {
 		expect(str).toBeMatchedBy(match, pattern);
@@ -27,7 +27,7 @@ function check(pattern: string, examples: string[], counterExamples: string[] = 
 	});
 }
 
-describe('xspattern', () => {
+describe.only('xspattern', () => {
 	describe('xpath', () => {
 		it('can match substrings instead of full strings', () => {
 			const match = compile('a|b', { language: 'xpath' });
@@ -150,6 +150,23 @@ describe('xspattern', () => {
 		);
 	});
 
+	it('supports reluctant quantifiers in xpath mode', () => {
+		check('^a??$', ['', 'a'], ['aa'], true);
+		check('^a*?$', ['', 'a', 'aa', 'aaaaa'], ['aaaaab'], true);
+		check('^a+?$', ['a', 'aa', 'aaaaa'], ['', 'aaaaab'], true);
+		check('^a{2,3}?$', ['aa', 'aaa'], ['', 'a', 'aaaa'], true);
+		check('^a{2,}?$', ['aa', 'aaa', 'aaaaa'], ['', 'a'], true);
+		check('^a{2}?$', ['aa'], ['', 'a', 'aaa', 'aaaaa'], true);
+		check('^a{0,2}?$', ['', 'a', 'aa'], ['aaa', 'aaaaa'], true);
+		check('^a{0,0}?$', [''], ['a', 'aa', 'aaa', 'b'], true);
+		check(
+			'^a{10,20}?$',
+			['aaaaaaaaaa', 'aaaaaaaaaaaa', 'aaaaaaaaaaaaaaaaaaaa'],
+			['a', 'aaaaaaaaa', 'aaaaaaaaaaaaaaaaaaaaa', 'b'],
+			true
+		);
+	});
+
 	it('handles surrogate pairs', () => {
 		check('💩', ['💩', '\uD83D\uDCA9'], ['\uD83D', '\uDCA9']);
 	});
@@ -172,6 +189,25 @@ describe('xspattern', () => {
 		check('\\)', [')'], ['\\']);
 		check('\\[', ['['], ['\\']);
 		check('\\]', [']'], ['\\']);
+
+		// All should work the same in XPath
+		check('^\\n$', ['\n'], ['\r', '\r\n', '\\n'], true);
+		check('^\\r$', ['\r'], ['\n', '\r\n', '\\r'], true);
+		check('^\\t$', ['\t'], [' ', '    '], true);
+		check('^\\\\$', ['\\'], ['\\\\'], true);
+		check('^\\|$', ['|'], ['\\'], true);
+		check('^\\.$', ['.'], ['\\', 'a'], true);
+		check('^\\-$', ['-'], ['\\'], true);
+		check('^\\^$', ['^'], ['\\'], true);
+		check('^\\?$', ['?'], ['\\', ''], true);
+		check('^\\*$', ['*'], ['\\'], true);
+		check('^\\+$', ['+'], ['\\'], true);
+		check('^\\{$', ['{'], ['\\'], true);
+		check('^\\}$', ['}'], ['\\'], true);
+		check('^\\($', ['('], ['\\'], true);
+		check('^\\)$', [')'], ['\\'], true);
+		check('^\\[$', ['['], ['\\'], true);
+		check('^\\]$', [']'], ['\\'], true);
 	});
 
 	it('supports positive character groups', () => {
@@ -197,6 +233,16 @@ describe('xspattern', () => {
 		check('[abcd-[cdef]]', ['a', 'b'], ['c', 'd', 'e', 'f', 'g']);
 		check('[a-z-[aeoui]]', ['b', 'd', 'z'], ['a', 'u', 'o']);
 		check('[a--[a]]', ['-'], ['a', 'b']);
+	});
+
+	it('throws the correct error when it sees backreferences', () => {
+		// check('([ab])[^ab]*\\1', ['axa', 'bxb'], ['a', 'b', 'axb', 'bxa', 'aba']);
+		expect(() => compile('([ab])[^ab]*\\1', { language: 'xpath' })).toThrow(
+			/Backreferences in XPath patterns are not yet implemented/
+		);
+		expect(() => compile('([ab])[^ab]*\\10', { language: 'xpath' })).toThrow(
+			/Backreferences in XPath patterns are not yet implemented/
+		);
 	});
 
 	describe('multi-character escapes', () => {
@@ -250,6 +296,12 @@ describe('xspattern', () => {
 			check('\\p{IsBasicLatin}', ['a', 'Q'], ['好']);
 			check('\\p{IsCJKUnifiedIdeographs}', ['好'], ['Z']);
 			check('\\p{IsMiscellaneousSymbolsandPictographs}', ['💩'], ['☃']);
+		});
+
+		it('throws when passed unknown block in xpath mode', () => {
+			expect(() => compile('\\p{IsPigLatin}', { language: 'xpath' })).toThrow(
+				/The unicode block identifier "PigLatin" is not known/
+			);
 		});
 
 		it("matches any character for a unicode block that doesn't exist", () => {

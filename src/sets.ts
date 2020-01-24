@@ -26,12 +26,16 @@ export function difference(predicate: Predicate, except: Predicate | null): Pred
 const predicateByNormalizedBlockId: Map<string, Predicate> = unpackBlocks(blockNames, blockLengths);
 const predicateByCategory: Map<string, Predicate> = unpackCategories(categories);
 
-export function unicodeBlock(identifier: string): Predicate {
+export function unicodeBlock(identifier: string, acceptUnknownBlocks: boolean): Predicate {
 	// The matching engine is not required to normalize the block identifier in the regexp
 	const predicate = predicateByNormalizedBlockId.get(identifier);
 	if (predicate === undefined) {
-		// Unknown blocks should match every character
-		return everything;
+		if (acceptUnknownBlocks) {
+			// Unknown blocks should match every character
+			return everything;
+		}
+
+		throw new Error(`The unicode block identifier "${identifier}" is not known.`);
 	}
 	return predicate;
 }
