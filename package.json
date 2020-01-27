@@ -33,7 +33,7 @@
 		"whynot": "^3.0.3"
 	},
 	"devDependencies": {
-		"@types/jest": "^24.0.22",
+		"@types/jest": "^25.1.0",
 		"fontoxpath": "^3.9.0",
 		"jest": "^24.9.0",
 		"mkdirp": "^0.5.1",
