@@ -1,19 +1,28 @@
-import { names as blockNames, lengths as blockLengths } from './generated/blocks.json';
+import {
+	charRange,
+	everything,
+	INPUT_END_SENTINAL,
+	INPUT_START_SENTINAL,
+	singleChar,
+	union
+} from './basic-sets';
+import { lengths as blockLengths, names as blockNames } from './generated/blocks.json';
 import categories from './generated/categories.json';
-
-import { singleChar, charRange, everything, union } from './basic-sets';
 import { Codepoint, Predicate } from './types';
 import { unpackBlocks } from './unicode-blocks';
 import { unpackCategories } from './unicode-categories';
 
-export { singleChar, charRange, union } from './basic-sets';
+export { charRange, singleChar, union } from './basic-sets';
 
 export function asCodepoint(char: string): Codepoint {
 	return char.codePointAt(0)!;
 }
 
+const sentinal: Predicate = codepoint =>
+	codepoint === INPUT_START_SENTINAL || codepoint === INPUT_END_SENTINAL;
+
 export function complement(predicate: Predicate): Predicate {
-	return codepoint => !predicate(codepoint);
+	return codepoint => !sentinal(codepoint) && !predicate(codepoint);
 }
 
 export function difference(predicate: Predicate, except: Predicate | null): Predicate {
@@ -100,8 +109,8 @@ const wordChar = difference(
 const notWordChar = complement(wordChar);
 
 export function wildcard(codepoint: Codepoint): boolean {
-	// Anything except newline and carriage return
-	return codepoint !== 0xa && codepoint !== 0xd;
+	// Anything except newline, carriage return and the start / end sentinals
+	return codepoint !== 0xa && codepoint !== 0xd && !sentinal(codepoint);
 }
 
 export const multiChar = {

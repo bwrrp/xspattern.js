@@ -233,6 +233,7 @@ describe.only('xspattern', () => {
 		check('[abcd-[cdef]]', ['a', 'b'], ['c', 'd', 'e', 'f', 'g']);
 		check('[a-z-[aeoui]]', ['b', 'd', 'z'], ['a', 'u', 'o']);
 		check('[a--[a]]', ['-'], ['a', 'b']);
+		check('a[^b]', ['a ', 'ax', 'abaxb'], ['a', 'ab', 'abc'], true);
 	});
 
 	it('throws the correct error when it sees backreferences', () => {

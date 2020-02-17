@@ -351,7 +351,7 @@ export function generateParser(options: { language: string }): (input: string) =
 	);
 
 	// BackReference (XPath only)
-	const backReference: Parser<any> = map(
+	const backReference: Parser<never> = map(
 		preceded(
 			BACKSLASH,
 			then(
