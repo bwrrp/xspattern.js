@@ -27,7 +27,7 @@ function check(pattern: string, examples: string[], counterExamples: string[] = 
 	});
 }
 
-describe.only('xspattern', () => {
+describe('xspattern', () => {
 	describe('xpath', () => {
 		it('can match substrings instead of full strings', () => {
 			const match = compile('a|b', { language: 'xpath' });
@@ -243,6 +243,16 @@ describe.only('xspattern', () => {
 		);
 		expect(() => compile('([ab])[^ab]*\\10', { language: 'xpath' })).toThrow(
 			/Backreferences in XPath patterns are not yet implemented/
+		);
+	});
+
+	it('throws the correct error when it sees backreferences in xsd mode', () => {
+		// check('([ab])[^ab]*\\1', ['axa', 'bxb'], ['a', 'b', 'axb', 'bxa', 'aba']);
+		expect(() => compile('([ab])[^ab]*\\1', { language: 'xsd' })).toThrow(
+			/Error parsing pattern /
+		);
+		expect(() => compile('([ab])[^ab]*\\10', { language: 'xsd' })).toThrow(
+			/Error parsing pattern /
 		);
 	});
 

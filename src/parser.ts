@@ -21,7 +21,7 @@ import {
 	token
 } from 'prsc';
 import { Atom, Branch, Piece, Quantifier, RegExp } from './ast';
-import { INPUT_END_SENTINAL, INPUT_START_SENTINAL } from './basic-sets';
+import { INPUT_END_SENTINEL, INPUT_START_SENTINEL } from './basic-sets';
 import {
 	asCodepoint,
 	charRange as charRangePredicate,
@@ -328,8 +328,8 @@ export function generateParser(options: { language: string }): (input: string) =
 					charClassEsc,
 					charClassExpr,
 					WildcardEsc,
-					map(CARET, () => (c: Codepoint) => c === INPUT_START_SENTINAL),
-					map(DOLLAR, () => (c: Codepoint) => c === INPUT_END_SENTINAL)
+					map(CARET, () => (c: Codepoint) => c === INPUT_START_SENTINEL),
+					map(DOLLAR, () => (c: Codepoint) => c === INPUT_END_SENTINEL)
 			  ])
 			: or([
 					map(SingleCharEsc, singleCharPredicate),

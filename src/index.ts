@@ -1,5 +1,5 @@
 import { compileVM } from 'whynot';
-import { INPUT_END_SENTINAL, INPUT_START_SENTINAL } from './basic-sets';
+import { INPUT_END_SENTINEL, INPUT_START_SENTINEL } from './basic-sets';
 import { compileRegExp } from './compiler';
 import { generateParser } from './parser';
 
@@ -30,7 +30,7 @@ export function compile(pattern: string, options: Options = { language: 'xsd' })
 	return function match(str: string): boolean {
 		const codepoints =
 			options.language === 'xpath'
-				? [INPUT_START_SENTINAL, ...toCodePoints(str), INPUT_END_SENTINAL]
+				? [INPUT_START_SENTINEL, ...toCodePoints(str), INPUT_END_SENTINEL]
 				: toCodePoints(str);
 		return vm.execute(codepoints).success;
 	};
