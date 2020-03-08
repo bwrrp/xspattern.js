@@ -2,7 +2,7 @@
 
 [![NPM version](https://badge.fury.io/js/xspattern.svg)](https://badge.fury.io/js/xspattern)
 [![Build Status](https://travis-ci.org/bwrrp/xspattern.js.svg?branch=master)](https://travis-ci.org/bwrrp/xspattern.js)
-[![Greenkeeper badge](https://badges.greenkeeper.io/bwrrp/xspattern.js.svg)](https://greenkeeper.io/)
+
 
 XML Schema Regular Expression engine
 
