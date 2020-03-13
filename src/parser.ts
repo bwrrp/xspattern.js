@@ -21,7 +21,7 @@ import {
 	token
 } from 'prsc';
 import { Atom, Branch, Piece, Quantifier, RegExp } from './ast';
-import { INPUT_END_SENTINAL, INPUT_START_SENTINAL } from './basic-sets';
+import { INPUT_END_SENTINEL, INPUT_START_SENTINEL } from './basic-sets';
 import {
 	asCodepoint,
 	charRange as charRangePredicate,
@@ -55,6 +55,8 @@ const PIPE = token('|');
 const PLUS = token('+');
 const QUESTION_MARK = token('?');
 const SUBTRACT_MARKER = token('-[');
+
+const ZERO_CODE_POINT = asCodepoint('0');
 
 export function generateParser(options: { language: string }): (input: string) => RegExp {
 	function asSetOfCodepoints(chars: string): Set<Codepoint> {
@@ -174,7 +176,7 @@ export function generateParser(options: { language: string }): (input: string) =
 			token('Is'),
 			recognize(plus(filter(codepoint, isBlockIdentifierChar, ['block identifier'])))
 		),
-		unicodeBlock
+		identifier => unicodeBlock(identifier, options.language !== 'xpath')
 	);
 
 	// Category Escape
@@ -326,8 +328,8 @@ export function generateParser(options: { language: string }): (input: string) =
 					charClassEsc,
 					charClassExpr,
 					WildcardEsc,
-					map(CARET, () => (c: Codepoint) => c === INPUT_START_SENTINAL),
-					map(DOLLAR, () => (c: Codepoint) => c === INPUT_END_SENTINAL)
+					map(CARET, () => (c: Codepoint) => c === INPUT_START_SENTINEL),
+					map(DOLLAR, () => (c: Codepoint) => c === INPUT_END_SENTINEL)
 			  ])
 			: or([
 					map(SingleCharEsc, singleCharPredicate),
@@ -346,6 +348,35 @@ export function generateParser(options: { language: string }): (input: string) =
 		codepoint,
 		codepoint => !metachars.has(codepoint),
 		['NormalChar']
+	);
+
+	// BackReference (XPath only)
+	const backReference: Parser<never> = map(
+		preceded(
+			BACKSLASH,
+			then(
+				map(
+					filter(codepoint, charRangePredicate(asCodepoint('1'), asCodepoint('9')), [
+						'digit'
+					]),
+					codepoint => codepoint - ZERO_CODE_POINT
+				),
+				star(
+					map(
+						filter(codepoint, charRangePredicate(ZERO_CODE_POINT, asCodepoint('9')), [
+							'digit'
+						]),
+						codepoint => codepoint - ZERO_CODE_POINT
+					)
+				),
+				(firstDigit, restDigits) => {
+					restDigits.reduce((sum, digit) => sum * 10 + digit, firstDigit);
+				}
+			)
+		),
+		_backReferenceNumber => {
+			throw new Error('Backreferences in XPath patterns are not yet implemented.');
+		}
 	);
 
 	// Atom
@@ -369,7 +400,8 @@ export function generateParser(options: { language: string }): (input: string) =
 							kind: 'regexp',
 							value: regexp
 						})
-					)
+					),
+					backReference
 			  ])
 			: or<Atom>([
 					map(NormalChar, codepoint => ({
@@ -385,12 +417,12 @@ export function generateParser(options: { language: string }): (input: string) =
 						})
 					)
 			  ]);
+
 	// Quantifier
 
-	const zeroCodepoint = asCodepoint('0');
-	const isDigit = charRangePredicate(zeroCodepoint, asCodepoint('9'));
+	const isDigit = charRangePredicate(ZERO_CODE_POINT, asCodepoint('9'));
 	const QuantExact: Parser<number> = map(
-		plus(map(filter(codepoint, isDigit, ['digit']), codepoint => codepoint - zeroCodepoint)),
+		plus(map(filter(codepoint, isDigit, ['digit']), codepoint => codepoint - ZERO_CODE_POINT)),
 		digits => digits.reduce((num, digit) => num * 10 + digit)
 	);
 
@@ -413,12 +445,24 @@ export function generateParser(options: { language: string }): (input: string) =
 		map(QuantExact, q => ({ min: q, max: q }))
 	]);
 
-	const quantifier: Parser<Quantifier> = or<Quantifier>([
-		map(QUESTION_MARK, () => ({ min: 0, max: 1 })),
-		map(ASTERISK, () => ({ min: 0, max: null })),
-		map(PLUS, () => ({ min: 1, max: null })),
-		delimited(BRACE_OPEN, quantity, BRACE_CLOSE, true)
-	]);
+	const quantifier: Parser<Quantifier> =
+		options.language === 'xpath'
+			? then(
+					or<Quantifier>([
+						map(QUESTION_MARK, () => ({ min: 0, max: 1 })),
+						map(ASTERISK, () => ({ min: 0, max: null })),
+						map(PLUS, () => ({ min: 1, max: null })),
+						delimited(BRACE_OPEN, quantity, BRACE_CLOSE, true)
+					]),
+					optional(QUESTION_MARK),
+					(quantifier, _isReluctant) => quantifier
+			  )
+			: or<Quantifier>([
+					map(QUESTION_MARK, () => ({ min: 0, max: 1 })),
+					map(ASTERISK, () => ({ min: 0, max: null })),
+					map(PLUS, () => ({ min: 1, max: null })),
+					delimited(BRACE_OPEN, quantity, BRACE_CLOSE, true)
+			  ]);
 
 	// Piece
 
