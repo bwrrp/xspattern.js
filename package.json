@@ -12,6 +12,7 @@
 	],
 	"main": "dist/xspattern.js",
 	"module": "dist/xspattern.mjs",
+	"types": "dist/xspattern.d.ts",
 	"scripts": {
 		"build:clean": "rimraf dist && rimraf lib && rimraf src/generated",
 		"build:dirs": "mkdirp lib src/generated",
