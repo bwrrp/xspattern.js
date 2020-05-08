@@ -1,5 +1,13 @@
 import { compile, MatchFn } from '../src/index';
 
+declare global {
+	namespace jest {
+		interface Matchers<R, T = {}> {
+			toBeMatchedBy(matcher: (str: string) => boolean, pattern: string): void;
+		}
+	}
+}
+
 expect.extend({
 	toBeMatchedBy(str: string, matcher: MatchFn, pattern: string) {
 		if (matcher(str)) {
