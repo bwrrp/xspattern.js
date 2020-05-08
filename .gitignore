@@ -1,6 +1,7 @@
 /coverage/
 /dist/
 /lib/
+/temp/
 /src/generated/
 node_modules/
 package-lock.json

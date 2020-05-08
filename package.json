@@ -17,7 +17,10 @@
 		"build:dirs": "mkdirp lib src/generated",
 		"build:unicodedata": "node scripts/buildUnicodeDb.js",
 		"build:bundle": "tsc -P tsconfig.build.json && rollup -c",
-		"build": "npm-run-all build:clean build:dirs build:unicodedata build:bundle",
+		"build:api": "api-extractor run",
+		"build:api-copy": "copyfiles --flat temp/* api",
+		"build:docs": "api-documenter markdown -i api -o docs",
+		"build": "npm-run-all build:clean build:dirs build:unicodedata build:bundle build:api build:api-copy build:docs",
 		"prepare": "npm run build",
 		"test": "jest --coverage --verbose"
 	},
@@ -33,7 +36,10 @@
 		"whynot": "^3.0.3"
 	},
 	"devDependencies": {
+		"@microsoft/api-documenter": "^7.8.0",
+		"@microsoft/api-extractor": "^7.8.0",
 		"@types/jest": "^25.1.4",
+		"copyfiles": "^2.2.0",
 		"fontoxpath": "^3.11.1",
 		"jest": "^25.1.0",
 		"mkdirp": "^1.0.3",
