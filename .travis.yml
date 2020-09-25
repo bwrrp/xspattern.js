@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-  - "10"
+  - "12"
 install:
   - wget https://github.com/w3c/xsdtests/archive/master.zip -O /tmp/master.zip
   - unzip /tmp/master.zip
