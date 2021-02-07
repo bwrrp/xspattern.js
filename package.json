@@ -10,8 +10,8 @@
 		"pattern",
 		"xs:pattern"
 	],
-	"main": "dist/xspattern.js",
-	"module": "dist/xspattern.mjs",
+	"main": "dist/xspattern.umd.js",
+	"module": "dist/xspattern.esm.js",
 	"types": "dist/xspattern.d.ts",
 	"scripts": {
 		"build:clean": "rimraf dist && rimraf lib && rimraf src/generated",

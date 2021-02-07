@@ -29,10 +29,10 @@ or
 yarn add xspattern
 ```
 
-The package includes both a UMD bundle (`dist/xspattern.js`), compatible with
-Node.js, and an ES6 module (`dist/xspattern.mjs`). The `whynot` library is
-used as a dependency, but is not included in the bundles. It should be
-automatically installed and included in most configurations.
+The package includes both a UMD bundle (`dist/xspattern.umd.js`), compatible
+with Node.js, and an ES6 module (`dist/xspattern.esm.js`). The `whynot`
+library is used as a dependency, but is not included in the bundles. It
+should be automatically installed and included in most configurations.
 
 ## Usage
 
