@@ -1,7 +1,7 @@
 # xspattern
 
 [![NPM version](https://badge.fury.io/js/xspattern.svg)](https://badge.fury.io/js/xspattern)
-[![Build Status](https://travis-ci.org/bwrrp/xspattern.js.svg?branch=master)](https://travis-ci.org/bwrrp/xspattern.js)
+[![CI](https://github.com/bwrrp/xspattern.js/workflows/CI/badge.svg)](https://github.com/bwrrp/xspattern.js/actions?query=workflow%3ACI)
 
 XML Schema Regular Expression engine
 
