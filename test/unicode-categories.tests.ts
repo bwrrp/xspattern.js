@@ -4,7 +4,7 @@ import {
 	encode,
 	UnicodeDataRange,
 	unpackCategories,
-	CATEGORIES
+	CATEGORIES,
 } from '../src/unicode-categories';
 
 import unicodeData from './unicode-data';
@@ -34,7 +34,7 @@ describe('unicode category packing', () => {
 				{ start: 0xa3, end: 0xa3, catIndex: -1 },
 				{ start: 0xa4, end: 0xa4, catIndex: 24 },
 				{ start: 0xa5, end: 0xaf, catIndex: -1 },
-				{ start: 0xb0, end: 0xb0, catIndex: 1 }
+				{ start: 0xb0, end: 0xb0, catIndex: 1 },
 			])
 		);
 	});
@@ -51,7 +51,7 @@ describe('unicode category packing', () => {
 			encodeRanges([
 				{ start: 0, end: 0, catIndex: 25 },
 				{ start: 1, end: 0x100, catIndex: 24 },
-				{ start: 0x101, end: 0x201, catIndex: 1 }
+				{ start: 0x101, end: 0x201, catIndex: 1 },
 			])
 		);
 	});
@@ -73,7 +73,7 @@ describe('unicode category packing', () => {
 				{ start: 0, end: 0x10, catIndex: -1 },
 				{ start: 0x11, end: 0x14, catIndex: -2 },
 				{ start: 0x15, end: 0x15, catIndex: 1 },
-				{ start: 0x16, end: 0x1a, catIndex: -2 }
+				{ start: 0x16, end: 0x1a, catIndex: -2 },
 			])
 		);
 	});
@@ -95,7 +95,7 @@ describe('unicode category packing', () => {
 				{ start: 0, end: 0x10, catIndex: -1 },
 				{ start: 0x11, end: 0x14, catIndex: -2 },
 				{ start: 0x15, end: 0x15, catIndex: 0 },
-				{ start: 0x16, end: 0x1a, catIndex: -2 }
+				{ start: 0x16, end: 0x1a, catIndex: -2 },
 			])
 		);
 	});
@@ -118,7 +118,7 @@ describe('unicode category packing', () => {
 				{ start: 0x11, end: 0x15, catIndex: -2 },
 				{ start: 0x16, end: 0x16, catIndex: 24 },
 				{ start: 0x17, end: 0x17, catIndex: 1 },
-				{ start: 0x18, end: 0x1a, catIndex: -2 }
+				{ start: 0x18, end: 0x1a, catIndex: -2 },
 			])
 		);
 	});
@@ -147,7 +147,7 @@ describe('unicode category packing', () => {
 				{ start: 1, end: 4, catIndex: -1 },
 				{ start: 5, end: 5, catIndex: 25 },
 				{ start: 6, end: 0x2f, catIndex: -1 },
-				{ start: 0x30, end: 0x30, catIndex: 25 }
+				{ start: 0x30, end: 0x30, catIndex: 25 },
 			])
 		);
 	});
@@ -172,7 +172,7 @@ describe('unicode category packing', () => {
 	function checkUnpack(ranges: UnicodeDataRange[]) {
 		const packed = encodeRanges(ranges);
 		const unpacked = unpackCategories(packed);
-		ranges.forEach(range => {
+		ranges.forEach((range) => {
 			for (let codepoint = range.start; codepoint <= range.end; ++codepoint) {
 				const expectedCatIndex =
 					range.catIndex === -2 ? (codepoint - range.start) % 2 : range.catIndex;
@@ -190,7 +190,7 @@ describe('unicode category packing', () => {
 			{ start: 0xa3, end: 0xa3, catIndex: -1 },
 			{ start: 0xa4, end: 0xa4, catIndex: 24 },
 			{ start: 0xa5, end: 0xaf, catIndex: -1 },
-			{ start: 0xb0, end: 0xb0, catIndex: 1 }
+			{ start: 0xb0, end: 0xb0, catIndex: 1 },
 		]);
 	});
 
@@ -198,7 +198,7 @@ describe('unicode category packing', () => {
 		checkUnpack([
 			{ start: 0, end: 0, catIndex: 25 },
 			{ start: 1, end: 0x100, catIndex: 24 },
-			{ start: 0x101, end: 0x201, catIndex: 1 }
+			{ start: 0x101, end: 0x201, catIndex: 1 },
 		]);
 	});
 
@@ -207,7 +207,7 @@ describe('unicode category packing', () => {
 			{ start: 0, end: 0x10, catIndex: -1 },
 			{ start: 0x11, end: 0x14, catIndex: -2 },
 			{ start: 0x15, end: 0x15, catIndex: 1 },
-			{ start: 0x16, end: 0x1a, catIndex: -2 }
+			{ start: 0x16, end: 0x1a, catIndex: -2 },
 		]);
 	});
 
@@ -216,7 +216,7 @@ describe('unicode category packing', () => {
 			{ start: 0, end: 0x10, catIndex: -1 },
 			{ start: 0x11, end: 0x14, catIndex: -2 },
 			{ start: 0x15, end: 0x15, catIndex: 0 },
-			{ start: 0x16, end: 0x1a, catIndex: -2 }
+			{ start: 0x16, end: 0x1a, catIndex: -2 },
 		]);
 	});
 
@@ -226,7 +226,7 @@ describe('unicode category packing', () => {
 			{ start: 0x11, end: 0x15, catIndex: -2 },
 			{ start: 0x16, end: 0x16, catIndex: 24 },
 			{ start: 0x17, end: 0x17, catIndex: 1 },
-			{ start: 0x18, end: 0x1a, catIndex: -2 }
+			{ start: 0x18, end: 0x1a, catIndex: -2 },
 		]);
 	});
 
@@ -234,7 +234,7 @@ describe('unicode category packing', () => {
 		const packed = packCategories(unicodeData);
 		const unpacked = unpackCategories(packed);
 		let rangeStart = -1;
-		unicodeData.split('\n').forEach(line => {
+		unicodeData.split('\n').forEach((line) => {
 			const trimmed = line.trim();
 			if (trimmed === '') {
 				return;

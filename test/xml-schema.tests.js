@@ -3,7 +3,7 @@ const {
 	evaluateXPathToFirstNode,
 	evaluateXPathToNodes,
 	evaluateXPathToString,
-	evaluateXPathToStrings
+	evaluateXPathToStrings,
 } = require('fontoxpath');
 const { sync } = require('slimdom-sax-parser');
 const { compile } = require('..');
@@ -24,12 +24,12 @@ function readXml(path) {
 
 const KNOWN_FAILURES = new Set([
 	// Category assignment changed: https://github.com/w3c/xsdtests/issues/2
-	'reZ003v'
+	'reZ003v',
 ]);
 
 function getSimpleTypes(schemaPath) {
 	const schema = readXml(schemaPath);
-	return evaluateXPathToNodes(`//${XS_SIMPLE_TYPE}`, schema).map(simpleTypeNode => {
+	return evaluateXPathToNodes(`//${XS_SIMPLE_TYPE}`, schema).map((simpleTypeNode) => {
 		const name = simpleTypeNode.getAttribute('name');
 		const restrictionNode = evaluateXPathToFirstNode(`${XS_RESTRICTION}`, simpleTypeNode);
 		if (!restrictionNode) {
@@ -39,7 +39,7 @@ function getSimpleTypes(schemaPath) {
 				description: `simple type "${name}"`,
 				pattern: null,
 				hasOtherRestrictions: false,
-				base: null
+				base: null,
 			};
 		}
 
@@ -69,7 +69,7 @@ function getSimpleTypes(schemaPath) {
 				name !== null ? `simple type "${name}"` : `simple type with pattern "${pattern}"`,
 			pattern,
 			hasOtherRestrictions,
-			base
+			base,
 		};
 	});
 }
@@ -104,14 +104,14 @@ function createPredicate(simpleType, simpleTypes) {
 		return null;
 	}
 	const basePredicate = simpleType.base
-		? createPredicate(simpleTypes.find(type => type.node === simpleType.base))
+		? createPredicate(simpleTypes.find((type) => type.node === simpleType.base))
 		: undefined;
 	if (basePredicate === null) {
 		return null;
 	}
 	const predicate = simpleType.pattern === null ? undefined : compile(simpleType.pattern);
 	return predicate && basePredicate
-		? value => predicate(value) && basePredicate(value)
+		? (value) => predicate(value) && basePredicate(value)
 		: predicate || basePredicate;
 }
 
@@ -190,7 +190,7 @@ function generateTestsForTestGroup(basePath, testGroup) {
 			return;
 		}
 
-		const predicates = simpleTypes.map(simpleType => {
+		const predicates = simpleTypes.map((simpleType) => {
 			const predicate = createPredicate(simpleType, simpleTypes);
 			if (predicate === null) {
 				it.skip(`${simpleType.description} uses non-pattern restrictions`, () => {});
@@ -198,7 +198,7 @@ function generateTestsForTestGroup(basePath, testGroup) {
 			return predicate;
 		});
 
-		instanceTests.forEach(instanceTest => {
+		instanceTests.forEach((instanceTest) => {
 			describe(`instance "${instanceTest.getAttribute('name')}"`, () => {
 				const instanceStatusIsQueried = evaluateXPathToBoolean(
 					'current/@status = "queried"',
@@ -220,14 +220,14 @@ function generateTestsForTestGroup(basePath, testGroup) {
 				const instance = readXml(resolve(basePath, instancePath));
 
 				const unusedSimpleTypes = new Set(simpleTypes);
-				const simpleTypesAndValues = simpleTypes.map(simpleType => {
+				const simpleTypesAndValues = simpleTypes.map((simpleType) => {
 					const values = findValues(simpleType, instance);
 					if (values.length > 0) {
 						for (
 							let baseSimpleType = simpleType;
 							baseSimpleType;
 							baseSimpleType = simpleTypes.find(
-								type => type.node === baseSimpleType.base
+								(type) => type.node === baseSimpleType.base
 							)
 						) {
 							unusedSimpleTypes.delete(baseSimpleType);
@@ -248,7 +248,7 @@ function generateTestsForTestGroup(basePath, testGroup) {
 							return;
 						}
 						it(`${simpleType.description} matches values in the instance`, () => {
-							values.forEach(value => {
+							values.forEach((value) => {
 								expect(predicate(value)).toBe(true);
 							});
 						});
@@ -265,7 +265,7 @@ function generateTestsForTestGroup(basePath, testGroup) {
 								if (values.length === 0) {
 									return false;
 								}
-								return values.some(value => {
+								return values.some((value) => {
 									return !predicate(value);
 								});
 							})
@@ -294,7 +294,7 @@ describe('XML Schema Regex tests', () => {
 	const metaPath = resolve(testsPath, 'msMeta');
 	const metadata = readXml(resolve(metaPath, 'Regex_w3c.xml'));
 
-	evaluateXPathToNodes('/testSet/testGroup', metadata).forEach(testGroup =>
+	evaluateXPathToNodes('/testSet/testGroup', metadata).forEach((testGroup) =>
 		generateTestsForTestGroup(metaPath, testGroup)
 	);
 });

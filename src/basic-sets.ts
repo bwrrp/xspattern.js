@@ -1,7 +1,7 @@
 import { Codepoint, Predicate } from './types';
 
 export function singleChar(expected: Codepoint): Predicate {
-	return codepoint => codepoint === expected;
+	return (codepoint) => codepoint === expected;
 }
 
 export function charRange(first: Codepoint | null, last: Codepoint | null): Predicate {
@@ -18,7 +18,7 @@ export function charRange(first: Codepoint | null, last: Codepoint | null): Pred
 		throw new Error('character range is in the wrong order');
 	}
 
-	return codepoint => first <= codepoint && codepoint <= last;
+	return (codepoint) => first <= codepoint && codepoint <= last;
 }
 
 export function everything(_codepoint: Codepoint): boolean {
@@ -30,7 +30,7 @@ export function nothing(): boolean {
 }
 
 export function union(first: Predicate, next: Predicate): Predicate {
-	return codepoint => first(codepoint) || next(codepoint);
+	return (codepoint) => first(codepoint) || next(codepoint);
 }
 
 export const INPUT_START_SENTINEL = -1;

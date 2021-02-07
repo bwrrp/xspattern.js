@@ -4,7 +4,7 @@ import { compileRegExp } from './compiler';
 import { generateParser } from './parser';
 
 function toCodePoints(str: string): number[] {
-	return [...str].map(c => c.codePointAt(0)!);
+	return [...str].map((c) => c.codePointAt(0)!);
 }
 
 /**
@@ -42,7 +42,7 @@ export type Options = {
 export function compile(pattern: string, options: Options = { language: 'xsd' }): MatchFn {
 	const ast = generateParser(options)(pattern);
 
-	const vm = compileVM<number>(assembler => {
+	const vm = compileVM<number>((assembler) => {
 		compileRegExp(assembler, ast, options.language === 'xpath');
 		assembler.accept();
 	});

@@ -4,7 +4,7 @@ import {
 	INPUT_END_SENTINEL,
 	INPUT_START_SENTINEL,
 	singleChar,
-	union
+	union,
 } from './basic-sets';
 import { lengths as blockLengths, names as blockNames } from './generated/blocks.json';
 import categories from './generated/categories.json';
@@ -18,18 +18,18 @@ export function asCodepoint(char: string): Codepoint {
 	return char.codePointAt(0)!;
 }
 
-const sentinel: Predicate = codepoint =>
+const sentinel: Predicate = (codepoint) =>
 	codepoint === INPUT_START_SENTINEL || codepoint === INPUT_END_SENTINEL;
 
 export function complement(predicate: Predicate): Predicate {
-	return codepoint => !sentinel(codepoint) && !predicate(codepoint);
+	return (codepoint) => !sentinel(codepoint) && !predicate(codepoint);
 }
 
 export function difference(predicate: Predicate, except: Predicate | null): Predicate {
 	if (except === null) {
 		return predicate;
 	}
-	return codepoint => predicate(codepoint) && !except(codepoint);
+	return (codepoint) => predicate(codepoint) && !except(codepoint);
 }
 
 const predicateByNormalizedBlockId: Map<string, Predicate> = unpackBlocks(blockNames, blockLengths);
@@ -83,7 +83,7 @@ const nameStartChar = [
 	charRange(0x3001, 0xd7ff),
 	charRange(0xf900, 0xfdcf),
 	charRange(0xfdf0, 0xfffd),
-	charRange(0x10000, 0xeffff)
+	charRange(0x10000, 0xeffff),
 ].reduce(union);
 
 const nameChar = [
@@ -93,7 +93,7 @@ const nameChar = [
 	charRange(asCodepoint('0'), asCodepoint('9')),
 	singleChar(0xb7),
 	charRange(0x300, 0x36f),
-	charRange(0x203f, 0x2040)
+	charRange(0x203f, 0x2040),
 ].reduce(union);
 
 const digit = predicateByCategory.get('Nd')!;
@@ -103,7 +103,7 @@ const wordChar = difference(
 	[
 		predicateByCategory.get('P')!,
 		predicateByCategory.get('Z')!,
-		predicateByCategory.get('C')!
+		predicateByCategory.get('C')!,
 	].reduce(union)
 );
 const notWordChar = complement(wordChar);
@@ -123,5 +123,5 @@ export const multiChar = {
 	d: digit,
 	D: notDigit,
 	w: wordChar,
-	W: notWordChar
+	W: notWordChar,
 };

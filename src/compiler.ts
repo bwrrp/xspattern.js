@@ -62,7 +62,7 @@ function compilePiece(assembler: RegExpAssembler, piece: Piece): void {
 
 function compileBranch(assembler: RegExpAssembler, branch: Branch): void {
 	// Sequence of pieces
-	branch.forEach(piece => {
+	branch.forEach((piece) => {
 		compilePiece(assembler, piece);
 	});
 }
@@ -86,13 +86,13 @@ export function compileRegExp(
 	}
 
 	// TODO: I should really export Instruction from whynot...
-	const joins: (typeof fork)[] = [];
-	regExp.forEach(branch => {
+	const joins: typeof fork[] = [];
+	regExp.forEach((branch) => {
 		fork.data.push(assembler.program.length);
 		compileBranch(assembler, branch);
 		joins.push(assembler.jump([]));
 	});
-	joins.forEach(join => {
+	joins.forEach((join) => {
 		join.data.push(assembler.program.length);
 	});
 

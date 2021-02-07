@@ -13,24 +13,24 @@ expect.extend({
 		if (matcher(str)) {
 			return {
 				message: () => `Input "${str}" should not match pattern "${pattern}"`,
-				pass: true
+				pass: true,
 			};
 		} else {
 			return {
 				message: () => `Input "${str}" should match pattern "${pattern}"`,
-				pass: false
+				pass: false,
 			};
 		}
-	}
+	},
 });
 
 function check(pattern: string, examples: string[], counterExamples: string[] = [], xpath = false) {
 	const match = compile(pattern, { language: xpath ? 'xpath' : 'xsd' });
 	expect(match).not.toBeNull();
-	examples.forEach(str => {
+	examples.forEach((str) => {
 		expect(str).toBeMatchedBy(match, pattern);
 	});
-	counterExamples.forEach(str => {
+	counterExamples.forEach((str) => {
 		expect(str).not.toBeMatchedBy(match, pattern);
 	});
 }

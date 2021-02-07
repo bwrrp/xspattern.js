@@ -9,14 +9,14 @@ const COMPATIBILITY_ALIASES: { [key: string]: string | undefined } = {
 	CombiningDiacriticalMarksforSymbols: 'CombiningMarksforSymbols',
 	PrivateUseArea: 'PrivateUse',
 	'SupplementaryPrivateUseArea-A': 'PrivateUse',
-	'SupplementaryPrivateUseArea-B': 'PrivateUse'
+	'SupplementaryPrivateUseArea-B': 'PrivateUse',
 };
 
 export function packBlocks(data: string): PackedBlocks {
 	let last = -1;
 	const names: (string | null)[] = [];
 	const lengths: number[] = [];
-	data.split('\n').forEach(line => {
+	data.split('\n').forEach((line) => {
 		const trimmed = line.trim();
 		if (trimmed === '' || trimmed.startsWith('#')) {
 			return;
@@ -51,7 +51,7 @@ export function unpackBlocks(
 	names.forEach((name: string | null, index: number) => {
 		const length = lengths[index];
 		if (name !== null) {
-			name.split('|').forEach(name => {
+			name.split('|').forEach((name) => {
 				const existing = predicateByNormalizedBlockId.get(name);
 				const predicate = charRange(first, first + length - 1);
 				predicateByNormalizedBlockId.set(

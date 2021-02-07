@@ -30,7 +30,7 @@ export const CATEGORIES = [
 	'Cc',
 	'Cf',
 	'Co',
-	'Cn'
+	'Cn',
 ];
 
 type UnicodeDataEntry = {
@@ -160,7 +160,7 @@ function* asRanges(entries: Iterable<UnicodeDataEntry>): Iterable<UnicodeDataRan
 			yield {
 				start: rangeStart,
 				end: previousEntry.codepoint,
-				catIndex: previousEntry.catIndex
+				catIndex: previousEntry.catIndex,
 			};
 			rangeStart = entry.codepoint;
 		}
@@ -188,9 +188,9 @@ function* encodeRange(range: UnicodeDataRange): Iterable<string> {
 			length & mask,
 			(length >> 6) & mask,
 			(length >> 12) & mask,
-			(length >> 18) & mask
+			(length >> 18) & mask,
 		]
-			.map(n => base64ByNumber.charAt(n))
+			.map((n) => base64ByNumber.charAt(n))
 			.join('');
 	}
 	// category

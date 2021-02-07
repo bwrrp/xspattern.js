@@ -18,7 +18,7 @@ import {
 	recognize,
 	star,
 	then,
-	token
+	token,
 } from 'prsc';
 import { Atom, Branch, Piece, Quantifier, RegExp } from './ast';
 import { INPUT_END_SENTINEL, INPUT_START_SENTINEL } from './basic-sets';
@@ -32,7 +32,7 @@ import {
 	unicodeBlock,
 	unicodeCategory,
 	union,
-	wildcard
+	wildcard,
 } from './sets';
 import { Codepoint, Predicate } from './types';
 
@@ -60,7 +60,7 @@ const ZERO_CODE_POINT = asCodepoint('0');
 
 export function generateParser(options: { language: string }): (input: string) => RegExp {
 	function asSetOfCodepoints(chars: string): Set<Codepoint> {
-		return new Set(chars.split('').map(c => asCodepoint(c)));
+		return new Set(chars.split('').map((c) => asCodepoint(c)));
 	}
 
 	function codepoint(input: string, offset: number): ParseResult<Codepoint> {
@@ -97,10 +97,10 @@ export function generateParser(options: { language: string }): (input: string) =
 								PARENTHESIS_OPEN,
 								PARENTHESIS_CLOSE,
 								BRACKET_OPEN,
-								BRACKET_CLOSE
+								BRACKET_CLOSE,
 							]),
-							c => asCodepoint(c)
-						)
+							(c) => asCodepoint(c)
+						),
 					])
 			  )
 			: preceded(
@@ -124,10 +124,10 @@ export function generateParser(options: { language: string }): (input: string) =
 								PARENTHESIS_OPEN,
 								PARENTHESIS_CLOSE,
 								BRACKET_OPEN,
-								BRACKET_CLOSE
+								BRACKET_CLOSE,
 							]),
-							c => asCodepoint(c)
-						)
+							(c) => asCodepoint(c)
+						),
 					])
 			  );
 
@@ -138,7 +138,11 @@ export function generateParser(options: { language: string }): (input: string) =
 		return then(
 			token(primary),
 			optional(
-				filter(codepoint, codepoint => secondaryChars.has(codepoint), secondaries.split(''))
+				filter(
+					codepoint,
+					(codepoint) => secondaryChars.has(codepoint),
+					secondaries.split('')
+				)
 			),
 			(p, s) => unicodeCategory(s === null ? p : p + String.fromCodePoint(s))
 		);
@@ -159,7 +163,7 @@ export function generateParser(options: { language: string }): (input: string) =
 		Punctuation,
 		Separators,
 		Symbols,
-		Others
+		Others,
 	]);
 
 	// Block Escape
@@ -168,7 +172,7 @@ export function generateParser(options: { language: string }): (input: string) =
 		charRangePredicate(asCodepoint('a'), asCodepoint('z')),
 		charRangePredicate(asCodepoint('A'), asCodepoint('Z')),
 		charRangePredicate(asCodepoint('0'), asCodepoint('9')),
-		singleCharPredicate(0x2d)
+		singleCharPredicate(0x2d),
 	].reduce(union);
 
 	const IsBlock: Parser<Predicate> = map(
@@ -176,7 +180,7 @@ export function generateParser(options: { language: string }): (input: string) =
 			token('Is'),
 			recognize(plus(filter(codepoint, isBlockIdentifierChar, ['block identifier'])))
 		),
-		identifier => unicodeBlock(identifier, options.language !== 'xpath')
+		(identifier) => unicodeBlock(identifier, options.language !== 'xpath')
 	);
 
 	// Category Escape
@@ -195,8 +199,8 @@ export function generateParser(options: { language: string }): (input: string) =
 	const MultiCharEsc: Parser<Predicate> = preceded(
 		BACKSLASH,
 		map(
-			or('sSiIcCdDwW'.split('').map(c => token(c))) as Parser<keyof typeof multiChar>,
-			c => multiChar[c]
+			or('sSiIcCdDwW'.split('').map((c) => token(c))) as Parser<keyof typeof multiChar>,
+			(c) => multiChar[c]
 		)
 	);
 
@@ -212,7 +216,7 @@ export function generateParser(options: { language: string }): (input: string) =
 
 	const SingleCharNoEsc: Parser<Codepoint> = filter(
 		codepoint,
-		codepoint => !notSingleCharNoEsc.has(codepoint),
+		(codepoint) => !notSingleCharNoEsc.has(codepoint),
 		['unescaped character']
 	);
 
@@ -222,7 +226,7 @@ export function generateParser(options: { language: string }): (input: string) =
 
 	const singleCharHyphenAsNull: Parser<Codepoint | null> = or([
 		map(HYPHEN, () => null),
-		singleChar
+		singleChar,
 	]);
 
 	const charRange: Parser<Predicate> = then(
@@ -250,7 +254,7 @@ export function generateParser(options: { language: string }): (input: string) =
 
 	const singleCharWithHyphenRules: Parser<Codepoint> = or([
 		singleCharHyphenWithHyphenRules,
-		preceded(not(HYPHEN, ['not -']), singleChar)
+		preceded(not(HYPHEN, ['not -']), singleChar),
 	]);
 
 	const charGroupPartsWithHyphenRules: Parser<Predicate[]> = or([
@@ -263,7 +267,7 @@ export function generateParser(options: { language: string }): (input: string) =
 			or([charRange, charClassEsc]),
 			or([charGroupPartsIndirect, assertEndOfCharGroup]),
 			cons
-		)
+		),
 	]);
 
 	function charGroupPartsWithHyphenRulesIndirect(
@@ -283,7 +287,7 @@ export function generateParser(options: { language: string }): (input: string) =
 			or([charRange, charClassEsc]),
 			or([charGroupPartsIndirect, assertEndOfCharGroup]),
 			cons
-		)
+		),
 	]);
 
 	function charGroupPartsIndirect(input: string, offset: number): ParseResult<Predicate[]> {
@@ -292,7 +296,7 @@ export function generateParser(options: { language: string }): (input: string) =
 
 	// Positive Character Group
 
-	const posCharGroup: Parser<Predicate> = map(charGroupParts, parts => parts.reduce(union));
+	const posCharGroup: Parser<Predicate> = map(charGroupParts, (parts) => parts.reduce(union));
 
 	// Negative Character Group
 
@@ -329,13 +333,13 @@ export function generateParser(options: { language: string }): (input: string) =
 					charClassExpr,
 					WildcardEsc,
 					map(CARET, () => (c: Codepoint) => c === INPUT_START_SENTINEL),
-					map(DOLLAR, () => (c: Codepoint) => c === INPUT_END_SENTINEL)
+					map(DOLLAR, () => (c: Codepoint) => c === INPUT_END_SENTINEL),
 			  ])
 			: or([
 					map(SingleCharEsc, singleCharPredicate),
 					charClassEsc,
 					charClassExpr,
-					WildcardEsc
+					WildcardEsc,
 			  ]);
 
 	// Normal Character
@@ -346,7 +350,7 @@ export function generateParser(options: { language: string }): (input: string) =
 			: asSetOfCodepoints('.\\?*+{}()|[]');
 	const NormalChar: Parser<Codepoint> = filter(
 		codepoint,
-		codepoint => !metachars.has(codepoint),
+		(codepoint) => !metachars.has(codepoint),
 		['NormalChar']
 	);
 
@@ -357,16 +361,16 @@ export function generateParser(options: { language: string }): (input: string) =
 			then(
 				map(
 					filter(codepoint, charRangePredicate(asCodepoint('1'), asCodepoint('9')), [
-						'digit'
+						'digit',
 					]),
-					codepoint => codepoint - ZERO_CODE_POINT
+					(codepoint) => codepoint - ZERO_CODE_POINT
 				),
 				star(
 					map(
 						filter(codepoint, charRangePredicate(ZERO_CODE_POINT, asCodepoint('9')), [
-							'digit'
+							'digit',
 						]),
-						codepoint => codepoint - ZERO_CODE_POINT
+						(codepoint) => codepoint - ZERO_CODE_POINT
 					)
 				),
 				(firstDigit, restDigits) => {
@@ -374,7 +378,7 @@ export function generateParser(options: { language: string }): (input: string) =
 				}
 			)
 		),
-		_backReferenceNumber => {
+		(_backReferenceNumber) => {
 			throw new Error('Backreferences in XPath patterns are not yet implemented.');
 		}
 	);
@@ -384,11 +388,11 @@ export function generateParser(options: { language: string }): (input: string) =
 	const atom: Parser<Atom> =
 		options.language === 'xpath'
 			? or<Atom>([
-					map(NormalChar, codepoint => ({
+					map(NormalChar, (codepoint) => ({
 						kind: 'predicate',
-						value: singleCharPredicate(codepoint)
+						value: singleCharPredicate(codepoint),
 					})),
-					map(charClass, predicate => ({ kind: 'predicate', value: predicate })),
+					map(charClass, (predicate) => ({ kind: 'predicate', value: predicate })),
 					map(
 						delimited(
 							PARENTHESIS_OPEN,
@@ -396,34 +400,36 @@ export function generateParser(options: { language: string }): (input: string) =
 							PARENTHESIS_CLOSE,
 							true
 						),
-						regexp => ({
+						(regexp) => ({
 							kind: 'regexp',
-							value: regexp
+							value: regexp,
 						})
 					),
-					backReference
+					backReference,
 			  ])
 			: or<Atom>([
-					map(NormalChar, codepoint => ({
+					map(NormalChar, (codepoint) => ({
 						kind: 'predicate',
-						value: singleCharPredicate(codepoint)
+						value: singleCharPredicate(codepoint),
 					})),
-					map(charClass, predicate => ({ kind: 'predicate', value: predicate })),
+					map(charClass, (predicate) => ({ kind: 'predicate', value: predicate })),
 					map(
 						delimited(PARENTHESIS_OPEN, regexpIndirect, PARENTHESIS_CLOSE, true),
-						regexp => ({
+						(regexp) => ({
 							kind: 'regexp',
-							value: regexp
+							value: regexp,
 						})
-					)
+					),
 			  ]);
 
 	// Quantifier
 
 	const isDigit = charRangePredicate(ZERO_CODE_POINT, asCodepoint('9'));
 	const QuantExact: Parser<number> = map(
-		plus(map(filter(codepoint, isDigit, ['digit']), codepoint => codepoint - ZERO_CODE_POINT)),
-		digits => digits.reduce((num, digit) => num * 10 + digit)
+		plus(
+			map(filter(codepoint, isDigit, ['digit']), (codepoint) => codepoint - ZERO_CODE_POINT)
+		),
+		(digits) => digits.reduce((num, digit) => num * 10 + digit)
 	);
 
 	const quantRange: Parser<Quantifier> = then(
@@ -437,12 +443,12 @@ export function generateParser(options: { language: string }): (input: string) =
 		}
 	);
 
-	const quantMin: Parser<Quantifier> = then(QuantExact, COMMA, min => ({ min, max: null }));
+	const quantMin: Parser<Quantifier> = then(QuantExact, COMMA, (min) => ({ min, max: null }));
 
 	const quantity: Parser<Quantifier> = or([
 		quantRange,
 		quantMin,
-		map(QuantExact, q => ({ min: q, max: q }))
+		map(QuantExact, (q) => ({ min: q, max: q })),
 	]);
 
 	const quantifier: Parser<Quantifier> =
@@ -452,7 +458,7 @@ export function generateParser(options: { language: string }): (input: string) =
 						map(QUESTION_MARK, () => ({ min: 0, max: 1 })),
 						map(ASTERISK, () => ({ min: 0, max: null })),
 						map(PLUS, () => ({ min: 1, max: null })),
-						delimited(BRACE_OPEN, quantity, BRACE_CLOSE, true)
+						delimited(BRACE_OPEN, quantity, BRACE_CLOSE, true),
 					]),
 					optional(QUESTION_MARK),
 					(quantifier, _isReluctant) => quantifier
@@ -461,14 +467,14 @@ export function generateParser(options: { language: string }): (input: string) =
 					map(QUESTION_MARK, () => ({ min: 0, max: 1 })),
 					map(ASTERISK, () => ({ min: 0, max: null })),
 					map(PLUS, () => ({ min: 1, max: null })),
-					delimited(BRACE_OPEN, quantity, BRACE_CLOSE, true)
+					delimited(BRACE_OPEN, quantity, BRACE_CLOSE, true),
 			  ]);
 
 	// Piece
 
 	const piece: Parser<Piece> = then(
 		atom,
-		map(optional(quantifier), q => (q === null ? { min: 1, max: 1 } : q)),
+		map(optional(quantifier), (q) => (q === null ? { min: 1, max: 1 } : q)),
 		(a, q) => [a, q]
 	);
 
@@ -487,7 +493,7 @@ export function generateParser(options: { language: string }): (input: string) =
 	}
 
 	function throwParseError(input: string, offset: number, expected: string[]): never {
-		const quoted = expected.map(str => `"${str}"`);
+		const quoted = expected.map((str) => `"${str}"`);
 		throw new Error(
 			`Error parsing pattern "${input}" at offset ${offset}: expected ${
 				quoted.length > 1 ? 'one of ' + quoted.join(', ') : quoted[0]
