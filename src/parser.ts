@@ -509,7 +509,11 @@ export function generateParser(options: { language: string }): (input: string) =
 			res = completeRegexp(input, 0);
 		} catch (error) {
 			// Generic error
-			throw new Error(`Error parsing pattern "${input}": ${error.message}`);
+			throw new Error(
+				`Error parsing pattern "${input}": ${
+					error instanceof Error ? error.message : error
+				}`
+			);
 		}
 		if (!res.success) {
 			return throwParseError(input, res.offset, res.expected);

@@ -15,7 +15,6 @@ export type Options = {
     language: 'xsd' | 'xpath';
 };
 
-
 // (No @packageDocumentation comment for this package)
 
 ```
