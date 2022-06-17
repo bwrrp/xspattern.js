@@ -17,7 +17,7 @@ export declare function compile(pattern: string, options?: Options): MatchFn;
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  pattern | string | Pattern to compile |
-|  options | [Options](./xspattern.options.md) | Additional options for the compiler |
+|  options | [Options](./xspattern.options.md) | <i>(Optional)</i> Additional options for the compiler |
 
 <b>Returns:</b>
 
