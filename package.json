@@ -1,6 +1,6 @@
 {
 	"name": "xspattern",
-	"version": "2.0.0",
+	"version": "2.0.1",
 	"description": "XML Schema pattern (regular expression) matcher",
 	"author": "Stef Busking",
 	"license": "MIT",
