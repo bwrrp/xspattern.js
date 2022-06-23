@@ -1,11 +1,6 @@
 import { Codepoint, Predicate } from '../src/types';
-import {
-	packCategories,
-	encode,
-	UnicodeDataRange,
-	unpackCategories,
-	CATEGORIES,
-} from '../src/unicode-categories';
+import { packCategories, CATEGORIES, encode, UnicodeDataRange } from '../scripts/pack';
+import { unpackCategories } from '../src/unpack';
 
 import unicodeData from './unicode-data';
 

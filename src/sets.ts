@@ -9,8 +9,7 @@ import {
 import { lengths as blockLengths, names as blockNames } from './generated/blocks.json';
 import categories from './generated/categories.json';
 import { Codepoint, Predicate } from './types';
-import { unpackBlocks } from './unicode-blocks';
-import { unpackCategories } from './unicode-categories';
+import { unpackBlocks, unpackCategories } from './unpack';
 
 export { charRange, singleChar, union } from './basic-sets';
 

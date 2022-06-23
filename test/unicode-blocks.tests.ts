@@ -1,4 +1,5 @@
-import { packBlocks, unpackBlocks } from '../src/unicode-blocks';
+import { packBlocks } from '../scripts/pack';
+import { unpackBlocks } from '../src/unpack';
 
 const blocks = `
 # Empty lines and comments are ignored

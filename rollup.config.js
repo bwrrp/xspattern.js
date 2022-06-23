@@ -4,22 +4,26 @@ import resolve from 'rollup-plugin-node-resolve';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import { terser } from 'rollup-plugin-terser';
 
-const { main: MAIN_DEST_FILE, module: MODULE_DEST_FILE } = require('./package.json');
+const {
+	exports: {
+		'.': { require: CJS_DEST_FILE, import: ESM_DEST_FILE },
+	},
+} = require('./package.json');
 
 export default {
-	input: 'lib/index.js',
+	input: 'lib/src/index.js',
 	output: [
 		{
 			name: 'xspattern',
-			file: MAIN_DEST_FILE,
+			file: CJS_DEST_FILE,
 			format: 'umd',
 			exports: 'named',
 			sourcemap: true,
 			globals: {
-				whynot: 'whynot'
-			}
+				whynot: 'whynot',
+			},
 		},
-		{ file: MODULE_DEST_FILE, format: 'es', sourcemap: true }
+		{ file: ESM_DEST_FILE, format: 'es', sourcemap: true },
 	],
 	external: ['whynot'],
 	plugins: [
@@ -27,9 +31,9 @@ export default {
 		commonjs(),
 		json({
 			preferConst: true,
-			compact: true
+			compact: true,
 		}),
 		sourcemaps(),
-		terser()
-	]
+		terser(),
+	],
 };

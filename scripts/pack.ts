@@ -1,5 +1,43 @@
-import { charRange, nothing, singleChar, union } from './basic-sets';
-import { Codepoint, Predicate } from './types';
+export type PackedBlocks = { names: (string | null)[]; lengths: number[] };
+
+// For Unicode 3.1 compatibility
+const COMPATIBILITY_ALIASES: { [key: string]: string | undefined } = {
+	GreekandCoptic: 'Greek',
+	CombiningDiacriticalMarksforSymbols: 'CombiningMarksforSymbols',
+	PrivateUseArea: 'PrivateUse',
+	'SupplementaryPrivateUseArea-A': 'PrivateUse',
+	'SupplementaryPrivateUseArea-B': 'PrivateUse',
+};
+
+export function packBlocks(data: string): PackedBlocks {
+	let last = -1;
+	const names: (string | null)[] = [];
+	const lengths: number[] = [];
+	data.split('\n').forEach((line) => {
+		const trimmed = line.trim();
+		if (trimmed === '' || trimmed.startsWith('#')) {
+			return;
+		}
+
+		const [range, name] = trimmed.split(';');
+		const [startHex, endHex] = range.split('..');
+		const firstCodepoint = parseInt(startHex, 16);
+		const lastCodepoint = parseInt(endHex, 16);
+		const normalizedName = name.replace(/\s/g, '');
+		const alias = COMPATIBILITY_ALIASES[normalizedName];
+
+		if (firstCodepoint !== last + 1) {
+			// Gap between blocks
+			names.push(null);
+			lengths.push(firstCodepoint - last - 1);
+		}
+		names.push(alias ? normalizedName + '|' + alias : normalizedName);
+		lengths.push(lastCodepoint - firstCodepoint + 1);
+		last = lastCodepoint;
+	});
+
+	return { names, lengths };
+}
 
 export const CATEGORIES = [
 	'Lu',
@@ -34,7 +72,7 @@ export const CATEGORIES = [
 ];
 
 type UnicodeDataEntry = {
-	codepoint: Codepoint;
+	codepoint: number;
 	name: string | null;
 	category: string | null;
 	catIndex: number;
@@ -213,69 +251,4 @@ export function packCategories(data: string): string {
 	const mapping = [...encode(ranges)].join('');
 
 	return mapping;
-}
-
-const numberByBase64: { [key: string]: number } = {};
-'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.split('').forEach((c, i) => {
-	numberByBase64[c] = i;
-});
-
-export function unpackCategories(packed: string): Map<string, Predicate> {
-	const predicateByCategory: Map<string, Predicate> = new Map();
-	const encodedMapping = packed.split('');
-	const partsByCatIndex: Predicate[][] = CATEGORIES.map(() => []);
-	let first = 0;
-	let i = 0;
-	while (i < encodedMapping.length) {
-		const encodedCatIndex = numberByBase64[encodedMapping[i]];
-		const catIndex = (encodedCatIndex & 0b11111) - 2;
-		let length = 1 + numberByBase64[encodedMapping[i + 1]];
-		if (encodedCatIndex & 0b100000) {
-			length += numberByBase64[encodedMapping[i + 2]] << 6;
-			length += numberByBase64[encodedMapping[i + 3]] << 12;
-			length += numberByBase64[encodedMapping[i + 4]] << 18;
-			i += 5;
-		} else {
-			i += 2;
-		}
-		switch (catIndex) {
-			case -2: {
-				let actualCatIndex = 0;
-				for (let codepoint = first; codepoint < first + length; ++codepoint) {
-					const parts = partsByCatIndex[actualCatIndex];
-					parts.push(singleChar(codepoint));
-					actualCatIndex = (actualCatIndex + 1) % 2;
-				}
-				break;
-			}
-
-			case -1:
-				// Gap, ignore
-				break;
-
-			default: {
-				const parts = partsByCatIndex[catIndex];
-				if (length === 1) {
-					parts.push(singleChar(first));
-				} else {
-					parts.push(charRange(first, first + length - 1));
-				}
-				break;
-			}
-		}
-		first += length;
-	}
-	const partsByPrefix: Map<string, Predicate[]> = new Map();
-	CATEGORIES.forEach((category, i) => {
-		const predicate = partsByCatIndex[i].reduce(union, nothing);
-		predicateByCategory.set(category, predicate);
-		const prefix = category.charAt(0);
-		const parts = partsByPrefix.get(prefix) || [];
-		partsByPrefix.set(prefix, parts);
-		parts.push(predicate);
-	});
-	partsByPrefix.forEach((parts, prefix) => {
-		predicateByCategory.set(prefix, parts.reduce(union, nothing));
-	});
-	return predicateByCategory;
 }

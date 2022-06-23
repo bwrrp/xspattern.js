@@ -3,18 +3,16 @@
 		"outDir": "lib",
 		"sourceMap": true,
 		"strict": true,
-		"module": "es2015",
+		"module": "commonjs",
 		"target": "es2015",
-		"declaration": true,
 		"lib": [
 			"es2015"
 		],
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
 		"esModuleInterop": true,
-		"types": []
-	},
-	"include": [
-		"src/**/*"
-	]
+		"types": [
+			"node"
+		]
+	}
 }
