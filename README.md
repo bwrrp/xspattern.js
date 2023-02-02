@@ -11,7 +11,7 @@ Schema 1.1 specification, which corrects some errors in earlier versions but
 should be considered fully compatible with XML Schema 1.0.
 
 For Unicode-related functionality, this implementation follows Unicode
-version 12.1.0. For compatibility with XML Schema 1.0, Unicode block names
+version 15.0.0. For compatibility with XML Schema 1.0, Unicode block names
 that existed in Unicode 3.1.0 are accepted as aliases for their current
 counterparts in `\p{Is...}` and `\P{Is...}` expressions.
 

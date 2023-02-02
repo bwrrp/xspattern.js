@@ -1,5 +1,5 @@
-const UNICODE_DATA_URL = 'https://www.unicode.org/Public/12.1.0/ucd/UnicodeData.txt';
-const UNICODE_BLOCKS_URL = 'https://www.unicode.org/Public/12.1.0/ucd/Blocks.txt';
+const UNICODE_DATA_URL = 'https://www.unicode.org/Public/15.0.0/ucd/UnicodeData.txt';
+const UNICODE_BLOCKS_URL = 'https://www.unicode.org/Public/15.0.0/ucd/Blocks.txt';
 
 import { resolve } from 'node:path';
 import { writeFileSync } from 'node:fs';
