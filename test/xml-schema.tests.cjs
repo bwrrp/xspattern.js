@@ -22,10 +22,8 @@ function readXml(path) {
 	return sync(readFileSync(path, { encoding: 'utf8' }));
 }
 
-const KNOWN_FAILURES = new Set([
-	// Category assignment changed: https://github.com/w3c/xsdtests/issues/2
-	'reZ003v',
-]);
+// No current known failures
+const KNOWN_FAILURES = new Set();
 
 function getSimpleTypes(schemaPath) {
 	const schema = readXml(schemaPath);
